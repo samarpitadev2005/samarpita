@@ -6,6 +6,7 @@ import PageHero from '../components/PageHero'
 import SplitHeading from '../components/SplitHeading'
 import Reveal from '../components/Reveal'
 import Button from '../components/Button'
+import Select from '../components/Select'
 import { sendForm } from '../lib/mail'
 import { getLenis } from '../lib/lenis'
 import { site } from '../data/site'
@@ -204,21 +205,12 @@ function VolunteerForm() {
                   <input name="email" required type="email" className="field" placeholder="Email" />
                   <input name="phone" required type="tel" className="field" placeholder="Phone" />
                   <input name="city" className="field" placeholder="City / Village" />
-                  <select name="interest" className="field" defaultValue="">
-                    <option value="" disabled>Area of interest</option>
-                    <option>Teaching</option>
-                    <option>Health camps</option>
-                    <option>Blood donation camps</option>
-                    <option>Relief work</option>
-                    <option>Women’s support</option>
-                    <option>CSR partnership</option>
-                  </select>
-                  <select name="availability" className="field" defaultValue="">
-                    <option value="" disabled>Availability</option>
-                    <option>Weekdays</option>
-                    <option>Weekends</option>
-                    <option>Flexible</option>
-                  </select>
+                  <Select
+                    name="interest"
+                    placeholder="Area of interest"
+                    options={['Teaching', 'Health camps', 'Blood donation camps', 'Relief work', 'Women’s support', 'CSR partnership']}
+                  />
+                  <Select name="availability" placeholder="Availability" options={['Weekdays', 'Weekends', 'Flexible']} />
                   {status === 'error' && (
                     <p className="text-[14px] text-blood sm:col-span-2">Something went wrong. Please try again or call us.</p>
                   )}
@@ -243,7 +235,6 @@ function Trust() {
     { icon: ShieldCheck, label: '12A registered' },
     { icon: Seal, label: 'Audited accounts' },
   ]
-  const partners = ['Seva Trust', 'Odisha Cares', 'HopeWorks', 'GreenRoots', 'Asha Foundation', 'Udaan']
   return (
     <section className="border-t border-line py-20">
       <div className="container-x">
@@ -252,12 +243,6 @@ function Trust() {
             <span key={label} className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-[14px] font-semibold">
               <Icon size={18} className="text-brand" weight="duotone" /> {label}
             </span>
-          ))}
-        </div>
-        <p className="mt-14 text-center text-[12px] font-semibold uppercase tracking-[0.22em] text-muted">Supported by</p>
-        <div className="mt-8 grid grid-cols-2 gap-8 text-center sm:grid-cols-3 lg:grid-cols-6">
-          {partners.map((p) => (
-            <span key={p} className="font-display text-2xl text-ink/40 transition-colors hover:text-ink">{p}</span>
           ))}
         </div>
       </div>

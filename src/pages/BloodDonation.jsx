@@ -21,6 +21,7 @@ import PageHero from '../components/PageHero'
 import SplitHeading from '../components/SplitHeading'
 import Reveal from '../components/Reveal'
 import Button from '../components/Button'
+import Select from '../components/Select'
 import Accordion from '../components/Accordion'
 import { site } from '../data/site'
 import { sendForm } from '../lib/mail'
@@ -269,12 +270,15 @@ function RegisterForm() {
                   </div>
                   <div>
                     <label className="label" htmlFor="b-gender">Gender *</label>
-                    <select id="b-gender" required value={form.gender} onChange={set('gender')} className="field">
-                      <option value="" disabled>Select</option>
-                      <option>Male</option>
-                      <option>Female</option>
-                      <option>Other</option>
-                    </select>
+                    <Select
+                      id="b-gender"
+                      name="gender"
+                      required
+                      value={form.gender}
+                      onChange={(v) => setForm((f) => ({ ...f, gender: v }))}
+                      options={['Male', 'Female', 'Other']}
+                      placeholder="Select"
+                    />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -288,10 +292,15 @@ function RegisterForm() {
                   </div>
                   <div>
                     <label className="label" htmlFor="b-district">District *</label>
-                    <select id="b-district" required value={form.district} onChange={set('district')} className="field">
-                      <option value="" disabled>Select district</option>
-                      {DISTRICTS.map((d) => <option key={d}>{d}</option>)}
-                    </select>
+                    <Select
+                      id="b-district"
+                      name="district"
+                      required
+                      value={form.district}
+                      onChange={(v) => setForm((f) => ({ ...f, district: v }))}
+                      options={DISTRICTS}
+                      placeholder="Select district"
+                    />
                   </div>
                   <div>
                     <label className="label" htmlFor="b-area">City / Village *</label>

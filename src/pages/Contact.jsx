@@ -7,6 +7,7 @@ import Reveal from '../components/Reveal'
 import Button from '../components/Button'
 import Accordion from '../components/Accordion'
 import SplitHeading from '../components/SplitHeading'
+import Select from '../components/Select'
 import { site } from '../data/site'
 import { sendForm } from '../lib/mail'
 import { addFeedback, isLive } from '../lib/store'
@@ -106,10 +107,7 @@ function ProblemForm() {
             </div>
             <div>
               <label className="label" htmlFor="category">Problem category *</label>
-              <select id="category" name="category" required defaultValue="" className="field">
-                <option value="" disabled>Select a category</option>
-                {categories.map((c) => <option key={c}>{c}</option>)}
-              </select>
+              <Select id="category" name="category" required options={categories} placeholder="Select a category" />
             </div>
             <div>
               <span className="label">Urgency</span>

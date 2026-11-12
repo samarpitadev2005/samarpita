@@ -25,6 +25,7 @@ import {
 } from '@phosphor-icons/react'
 import ThankYouCard from '../components/ThankYouCard'
 import ThemeToggle from '../components/ThemeToggle'
+import Select from '../components/Select'
 import { LogoMark } from '../components/Logo'
 import {
   signIn,
@@ -263,14 +264,20 @@ function Donors({ onAuthError }) {
           <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 text-muted" />
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search name, phone or area" className="field pl-11" />
         </label>
-        <select value={district} onChange={(e) => setDistrict(e.target.value)} className="field">
-          <option value="">All districts</option>
-          {districts.map((d) => <option key={d}>{d}</option>)}
-        </select>
-        <select value={status} onChange={(e) => setStatus(e.target.value)} className="field">
-          <option value="">Any status</option>
-          {Object.entries(STATUSES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-        </select>
+        <Select
+          aria-label="District"
+          value={district}
+          onChange={setDistrict}
+          options={[{ value: '', label: 'All districts' }, ...districts]}
+          className="min-w-[11rem]"
+        />
+        <Select
+          aria-label="Status"
+          value={status}
+          onChange={setStatus}
+          options={[{ value: '', label: 'Any status' }, ...Object.entries(STATUSES).map(([k, v]) => ({ value: k, label: v.label }))]}
+          className="min-w-[10rem]"
+        />
         <button onClick={load} className="field flex items-center justify-center gap-2 font-semibold" aria-label="Refresh"><ArrowsClockwise /></button>
         <button onClick={exportCsv} className="flex items-center justify-center gap-2 rounded-2xl bg-ink px-5 py-4 text-[14px] font-semibold text-cream">
           <DownloadSimple weight="bold" /> CSV
@@ -294,13 +301,14 @@ function Donors({ onAuthError }) {
               <p><b className="text-ink">Registered:</b> {fmt(r.createdAt)}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2 lg:justify-end">
-              <select
+              <Select
+                aria-label="Status"
+                variant="pill"
                 value={r.status || 'registered'}
-                onChange={(e) => changeStatus(r, e.target.value)}
-                className={`rounded-full border-0 px-3 py-2 text-[13px] font-semibold outline-none ${STATUSES[r.status || 'registered'].cls}`}
-              >
-                {Object.entries(STATUSES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-              </select>
+                onChange={(v) => changeStatus(r, v)}
+                options={Object.entries(STATUSES).map(([k, v]) => ({ value: k, label: v.label }))}
+                triggerClassName={STATUSES[r.status || 'registered'].cls}
+              />
               <a href={telLink(r.phone)} title={r.phone} className="grid h-10 w-10 place-items-center rounded-full bg-ink text-cream"><Phone weight="bold" /></a>
               <a href={waLink(r.phone)} target="_blank" rel="noreferrer" title="WhatsApp" className="grid h-10 w-10 place-items-center rounded-full bg-mint text-night"><WhatsappLogo weight="bold" /></a>
               <button onClick={() => setCard(r)} title="Thank-you card" className="grid h-10 w-10 place-items-center rounded-full bg-gold text-night"><Heart weight="fill" /></button>
