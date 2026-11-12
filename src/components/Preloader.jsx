@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { LogoMark } from './Logo'
 import OdiaWord from './OdiaWord'
 import { site } from '../data/site'
+import { ScrollTrigger } from '../lib/gsap'
 
 // Branded loading screen on first paint: logo, the Odia wordmark and a progress line.
 // It waits for fonts and the window load event (at most MAX_MS), stays at least MIN_MS so it
@@ -47,6 +48,7 @@ export default function Preloader() {
   // Keep the page from scrolling underneath while the loader is up
   useEffect(() => {
     document.documentElement.style.overflow = show ? 'hidden' : ''
+    if (!show) requestAnimationFrame(() => ScrollTrigger.refresh())
     return () => {
       document.documentElement.style.overflow = ''
     }
