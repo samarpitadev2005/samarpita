@@ -283,7 +283,13 @@ export default function Contact() {
               </span>
             </a>
             <InfoCard icon={MapPin} title="Office">{site.address}</InfoCard>
-            <InfoCard icon={Phone} title="Phone" href={`tel:${site.phoneRaw}`}>{site.phone}</InfoCard>
+            <InfoCard icon={Phone} title="Phone">
+              <span className="flex flex-col gap-1">
+                {site.phones.map((p) => (
+                  <a key={p.raw} href={`tel:${p.raw}`} className="hover:text-brand">{p.number}</a>
+                ))}
+              </span>
+            </InfoCard>
             <InfoCard icon={EnvelopeSimple} title="Email" href={`mailto:${site.email}`}>{site.email}</InfoCard>
             <InfoCard icon={WhatsappLogo} title="WhatsApp" href={site.whatsappLink}>{site.whatsapp}</InfoCard>
             <InfoCard icon={Clock} title="Working hours">{site.hours}</InfoCard>

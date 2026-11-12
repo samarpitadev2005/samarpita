@@ -19,6 +19,8 @@
     </script>
   </head>
   <body>
+    <!-- Shown before the app's JavaScript arrives; the Preloader component takes over and removes it -->
+    <div id="boot" style="position:fixed;inset:0;z-index:90;background:#06100a"></div>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

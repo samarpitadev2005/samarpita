@@ -10,33 +10,42 @@ import {
   Trash,
   Star,
   SignOut,
-  GoogleLogo,
   Heart,
   X,
   UsersThree,
   ChatCircleText,
-  Info,
   ArrowsClockwise,
   Eye,
   EyeSlash,
+  EyeClosed,
+  LockKey,
+  ArrowSquareOut,
+  ShieldCheck,
+  Info,
 } from '@phosphor-icons/react'
 import ThankYouCard from '../components/ThankYouCard'
+import ThemeToggle from '../components/ThemeToggle'
 import { LogoMark } from '../components/Logo'
 import {
-  isLive,
-  DEMO_PASSWORD,
   signIn,
   signOut,
-  watchAdmin,
+  currentAdmin,
+  changePassword,
   listDonors,
   updateDonor,
   deleteDonor,
-  setHero,
   listFeedback,
   updateFeedback,
   deleteFeedback,
 } from '../lib/store'
 
+/*
+  Samarpita admin panel: a separate page (admin.html) from the public website.
+  Sign-in is email + password against the API; the session is an httpOnly cookie,
+  and the panel signs itself out after IDLE_MINUTES without any activity.
+*/
+
+const IDLE_MINUTES = 30
 const GROUPS = ['A+', 'A-', 'B+', 'B-', 'O+', 'O-', 'AB+', 'AB-']
 const STATUSES = {
   registered: { label: 'Registered', cls: 'bg-sand text-ink' },
@@ -51,17 +60,40 @@ const waLink = (p, text) => {
   if (n.length === 10) n = '91' + n
   return `https://wa.me/${n}${text ? `?text=${encodeURIComponent(text)}` : ''}`
 }
+const siteUrl = import.meta.env.BASE_URL
+
+function PasswordField({ id, value, onChange, placeholder, autoComplete }) {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="relative">
+      <input
+        id={id}
+        type={show ? 'text' : 'password'}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        required
+        className="field pr-12"
+      />
+      <button type="button" onClick={() => setShow((s) => !s)} aria-label={show ? 'Hide password' : 'Show password'} className="absolute right-4 top-1/2 -translate-y-1/2 text-muted">
+        {show ? <EyeClosed size={20} /> : <Eye size={20} />}
+      </button>
+    </div>
+  )
+}
 
 function Login({ onDone }) {
+  const [email, setEmail] = useState('')
   const [pw, setPw] = useState('')
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
   const submit = async (e) => {
-    e?.preventDefault()
+    e.preventDefault()
     setBusy(true)
     setErr('')
     try {
-      onDone(await signIn(pw))
+      onDone(await signIn(email, pw))
     } catch (x) {
       setErr(x.message || 'Could not sign in.')
     } finally {
@@ -69,32 +101,26 @@ function Login({ onDone }) {
     }
   }
   return (
-    <section className="container-x grid min-h-[80vh] place-items-center pb-24 pt-36">
-      <form onSubmit={submit} className="w-full max-w-md rounded-[2rem] border border-line bg-linen p-8 text-center shadow-[0_30px_80px_-40px_rgba(0,0,0,0.35)] sm:p-10">
+    <main className="container-x grid min-h-screen place-items-center py-16">
+      <form onSubmit={submit} className="w-full max-w-md rounded-[2rem] border border-line bg-linen p-8 shadow-[0_30px_80px_-40px_rgba(0,0,0,0.35)] sm:p-10">
         <LogoMark className="mx-auto h-20 w-20" size={192} />
-        <h1 className="mt-6 font-display text-5xl">Admin</h1>
-        <p className="mt-2 text-muted">Blood donors &amp; feedback</p>
-        {isLive ? (
-          <button type="submit" disabled={busy} className="mt-8 inline-flex w-full items-center justify-center gap-3 rounded-full bg-ink py-4 font-semibold text-cream disabled:opacity-60">
-            <GoogleLogo size={20} weight="bold" /> {busy ? 'Signing in…' : 'Sign in with Google'}
-          </button>
-        ) : (
-          <>
-            <p className="mt-6 flex items-start gap-2 rounded-2xl bg-gold/15 p-4 text-left text-[13px] leading-relaxed">
-              <Info size={18} className="mt-0.5 shrink-0" />
-              <span>
-                <b>Demo mode.</b> Data is stored only in this browser until Firebase is connected. Demo password: <code className="font-semibold">{DEMO_PASSWORD}</code>
-              </span>
-            </p>
-            <input type="password" value={pw} onChange={(e) => setPw(e.target.value)} placeholder="Password" className="field mt-4" autoFocus />
-            <button type="submit" disabled={busy} className="mt-4 w-full rounded-full bg-ink py-4 font-semibold text-cream disabled:opacity-60">
-              {busy ? 'Checking…' : 'Sign in'}
-            </button>
-          </>
-        )}
-        {err && <p className="mt-4 text-[14px] text-blood">{err}</p>}
+        <h1 className="mt-6 text-center font-display text-5xl">Admin</h1>
+        <p className="mt-2 text-center text-muted">Blood donors &amp; feedback</p>
+        <label className="label mt-8" htmlFor="email">Email</label>
+        <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="username" required autoFocus className="field" placeholder="you@example.com" />
+        <label className="label mt-4" htmlFor="password">Password</label>
+        <PasswordField id="password" value={pw} onChange={setPw} autoComplete="current-password" placeholder="Your password" />
+        {err && <p className="mt-4 rounded-xl bg-blood/10 px-4 py-3 text-[14px] text-blood">{err}</p>}
+        <button type="submit" disabled={busy} className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink py-4 font-semibold text-cream disabled:opacity-60">
+          <LockKey weight="bold" /> {busy ? 'Signing in…' : 'Sign in'}
+        </button>
+        <p className="mt-6 flex items-start gap-2 text-[12px] leading-relaxed text-muted">
+          <ShieldCheck size={16} className="mt-0.5 shrink-0 text-brand" />
+          Only for the Samarpita team. Five wrong passwords lock the account for 15 minutes. Forgot your password? Ask the site admin to reset it.
+        </p>
+        <a href={siteUrl} className="mt-4 block text-center text-[13px] font-semibold text-muted hover:text-ink">← Back to website</a>
       </form>
-    </section>
+    </main>
   )
 }
 
@@ -115,14 +141,7 @@ function CardModal({ donor, onClose }) {
   }
   const msg = `Dear ${donor.name}, thank you for donating ${donor.group} blood and giving the gift of life. With gratitude, Samarpita Social Foundation Trust`
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-[70] grid place-items-center overflow-y-auto bg-night/80 p-4 backdrop-blur-sm"
-      onClick={onClose}
-      data-lenis-prevent
-    >
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-[70] grid place-items-center overflow-y-auto bg-night/80 p-4 backdrop-blur-sm" onClick={onClose}>
       <motion.div
         initial={{ y: 40, scale: 0.96 }}
         animate={{ y: 0, scale: 1 }}
@@ -148,15 +167,21 @@ function CardModal({ donor, onClose }) {
   )
 }
 
-function Donors() {
+function Donors({ onAuthError }) {
   const [rows, setRows] = useState(null)
   const [q, setQ] = useState('')
   const [group, setGroup] = useState('')
   const [district, setDistrict] = useState('')
   const [status, setStatus] = useState('')
   const [card, setCard] = useState(null)
+  const [err, setErr] = useState('')
 
-  const load = () => listDonors().then(setRows).catch(() => setRows([]))
+  const guard = (p) =>
+    p.catch((e) => {
+      if (e.status === 401) onAuthError()
+      else setErr(e.message)
+    })
+  const load = () => guard(listDonors().then(setRows)).then(() => setRows((r) => r || []))
   useEffect(() => {
     load()
   }, [])
@@ -174,26 +199,20 @@ function Donors() {
     [rows, q, group, district, status],
   )
 
-  const patch = async (r, p) => {
+  const patch = (r, p) => {
     setRows((rs) => rs.map((x) => (x.id === r.id ? { ...x, ...p } : x)))
-    await updateDonor(r.id, p)
+    return guard(updateDonor(r.id, p))
   }
   const changeStatus = async (r, s) => {
     const p = { status: s, ...(s === 'donated' && !r.donatedAt ? { donatedAt: new Date().toISOString() } : {}) }
     await patch(r, p)
-    const next = { ...r, ...p }
-    await setHero(next, s === 'donated' && next.showOnWall)
-    if (s === 'donated') setCard(next)
+    if (s === 'donated') setCard({ ...r, ...p })
   }
-  const toggleWall = async (r) => {
-    const show = !r.showOnWall
-    await patch(r, { showOnWall: show })
-    if (r.status === 'donated') await setHero({ ...r, showOnWall: show }, show)
-  }
-  const remove = async (r) => {
+  const toggleWall = (r) => patch(r, { showOnWall: !r.showOnWall })
+  const remove = (r) => {
     if (!confirm(`Delete ${r.name}? This cannot be undone.`)) return
     setRows((rs) => rs.filter((x) => x.id !== r.id))
-    await deleteDonor(r.id)
+    guard(deleteDonor(r.id))
   }
   const exportCsv = () => {
     const cols = ['name', 'group', 'phone', 'email', 'gender', 'age', 'weight', 'district', 'area', 'lastDonation', 'availability', 'status', 'donatedAt', 'createdAt']
@@ -204,11 +223,11 @@ function Donors() {
     a.download = `samarpita-donors-${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
   }
-
   const counts = useMemo(() => Object.fromEntries(GROUPS.map((g) => [g, (rows || []).filter((r) => r.group === g).length])), [rows])
 
   return (
     <div>
+      {err && <p className="mb-4 rounded-xl bg-blood/10 px-4 py-3 text-[14px] text-blood">{err}</p>}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
           ['Total donors', rows?.length ?? '…'],
@@ -252,7 +271,7 @@ function Donors() {
           <option value="">Any status</option>
           {Object.entries(STATUSES).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
         </select>
-        <button onClick={load} className="field flex items-center justify-center gap-2 font-semibold" aria-label="Refresh"><ArrowsClockwise /> </button>
+        <button onClick={load} className="field flex items-center justify-center gap-2 font-semibold" aria-label="Refresh"><ArrowsClockwise /></button>
         <button onClick={exportCsv} className="flex items-center justify-center gap-2 rounded-2xl bg-ink px-5 py-4 text-[14px] font-semibold text-cream">
           <DownloadSimple weight="bold" /> CSV
         </button>
@@ -266,9 +285,7 @@ function Donors() {
             <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[radial-gradient(circle_at_30%_30%,#ff6b6e,#b3141a)] font-display text-2xl text-white">{r.group}</span>
             <div className="min-w-0">
               <p className="truncate font-display text-2xl">{r.name}</p>
-              <p className="text-[13px] text-muted">
-                {[r.gender, r.age && `${r.age} yrs`, r.weight && `${r.weight} kg`].filter(Boolean).join(' · ')}
-              </p>
+              <p className="text-[13px] text-muted">{[r.gender, r.age && `${r.age} yrs`, r.weight && `${r.weight} kg`].filter(Boolean).join(' · ')}</p>
               <p className="text-[13px] text-muted">{[r.area, r.district].filter(Boolean).join(', ')}</p>
             </div>
             <div className="text-[13px] leading-relaxed text-muted">
@@ -301,19 +318,20 @@ function Donors() {
   )
 }
 
-function Feedback() {
+function Feedback({ onAuthError }) {
   const [rows, setRows] = useState(null)
+  const guard = (p) => p.catch((e) => (e.status === 401 ? onAuthError() : null))
   useEffect(() => {
-    listFeedback().then(setRows).catch(() => setRows([]))
+    guard(listFeedback().then(setRows)).then(() => setRows((r) => r || []))
   }, [])
-  const toggle = async (f) => {
+  const toggle = (f) => {
     setRows((rs) => rs.map((x) => (x.id === f.id ? { ...x, featured: !f.featured } : x)))
-    await updateFeedback(f.id, { featured: !f.featured })
+    guard(updateFeedback(f.id, { featured: !f.featured }))
   }
-  const remove = async (f) => {
+  const remove = (f) => {
     if (!confirm('Delete this feedback?')) return
     setRows((rs) => rs.filter((x) => x.id !== f.id))
-    await deleteFeedback(f.id)
+    guard(deleteFeedback(f.id))
   }
   if (rows === null) return <p className="text-muted">Loading…</p>
   if (!rows.length) return <p className="rounded-2xl border border-dashed border-line p-10 text-center text-muted">No feedback yet.</p>
@@ -322,18 +340,13 @@ function Feedback() {
       {rows.map((f) => (
         <div key={f.id} className="flex flex-col rounded-2xl border border-line bg-linen p-6">
           <div className="flex items-center justify-between">
-            <div className="flex gap-0.5 text-gold">
-              {[1, 2, 3, 4, 5].map((n) => <Star key={n} weight={n <= f.rating ? 'fill' : 'regular'} />)}
-            </div>
+            <div className="flex gap-0.5 text-gold">{[1, 2, 3, 4, 5].map((n) => <Star key={n} weight={n <= f.rating ? 'fill' : 'regular'} />)}</div>
             <span className="text-[12px] text-muted">{fmt(f.createdAt)}</span>
           </div>
           <p className="mt-4 flex-1 leading-relaxed">“{f.message}”</p>
           <p className="mt-4 text-[14px]"><b>{f.name}</b>{f.place && <span className="text-muted"> · {f.place}</span>}</p>
           <div className="mt-4 flex gap-2">
-            <button
-              onClick={() => toggle(f)}
-              className={`rounded-full px-4 py-2 text-[13px] font-semibold ${f.featured ? 'bg-brand text-cream' : 'border border-line'}`}
-            >
+            <button onClick={() => toggle(f)} className={`rounded-full px-4 py-2 text-[13px] font-semibold ${f.featured ? 'bg-brand text-cream' : 'border border-line'}`}>
               {f.featured ? 'Shown on website' : 'Show on website'}
             </button>
             <button onClick={() => remove(f)} className="grid h-9 w-9 place-items-center rounded-full border border-line text-blood" aria-label="Delete"><Trash /></button>
@@ -344,43 +357,158 @@ function Feedback() {
   )
 }
 
-export default function Admin() {
-  const [admin, setAdmin] = useState(undefined)
-  const [tab, setTab] = useState('donors')
-  useEffect(() => watchAdmin(setAdmin), [])
+function Security({ email, onPasswordChanged }) {
+  const [current, setCurrent] = useState('')
+  const [next, setNext] = useState('')
+  const [again, setAgain] = useState('')
+  const [msg, setMsg] = useState(null) // { ok, text }
+  const [busy, setBusy] = useState(false)
+  const submit = async (e) => {
+    e.preventDefault()
+    if (next !== again) return setMsg({ ok: false, text: 'The new passwords do not match.' })
+    setBusy(true)
+    setMsg(null)
+    try {
+      await changePassword(current, next)
+      setMsg({ ok: true, text: 'Password changed. Please sign in again with the new password.' })
+      setTimeout(onPasswordChanged, 1800)
+    } catch (x) {
+      setMsg({ ok: false, text: x.message })
+    } finally {
+      setBusy(false)
+    }
+  }
+  return (
+    <div className="grid gap-6 lg:grid-cols-2">
+      <form onSubmit={submit} className="rounded-2xl border border-line bg-linen p-6 sm:p-8">
+        <h2 className="font-display text-3xl">Change password</h2>
+        <p className="mt-1 text-[14px] text-muted">Signed in as <b className="text-ink">{email}</b></p>
+        <label className="label mt-6" htmlFor="cur">Current password</label>
+        <PasswordField id="cur" value={current} onChange={setCurrent} autoComplete="current-password" />
+        <label className="label mt-4" htmlFor="new">New password</label>
+        <PasswordField id="new" value={next} onChange={setNext} autoComplete="new-password" placeholder="At least 10 characters, letters and numbers" />
+        <label className="label mt-4" htmlFor="again">Repeat new password</label>
+        <PasswordField id="again" value={again} onChange={setAgain} autoComplete="new-password" />
+        {msg && <p className={`mt-4 rounded-xl px-4 py-3 text-[14px] ${msg.ok ? 'bg-brand-soft text-brand' : 'bg-blood/10 text-blood'}`}>{msg.text}</p>}
+        <button type="submit" disabled={busy} className="mt-6 rounded-full bg-ink px-6 py-3.5 font-semibold text-cream disabled:opacity-60">{busy ? 'Saving…' : 'Update password'}</button>
+      </form>
+      <div className="rounded-2xl border border-line bg-linen p-6 text-[14px] leading-relaxed text-muted sm:p-8">
+        <h2 className="font-display text-3xl text-ink">How your data is protected</h2>
+        <ul className="mt-4 list-disc space-y-2 pl-5">
+          <li>Passwords are stored only as bcrypt hashes; nobody can read them back.</li>
+          <li>Your session is a signed token in an httpOnly cookie that page scripts cannot read. It expires after 8 hours, and this page signs out after {IDLE_MINUTES} minutes without activity.</li>
+          <li>Five wrong passwords lock the account for 15 minutes, and sign-in attempts are rate limited.</li>
+          <li>Donor details (phone, email) are only ever sent to signed-in admins. The public heroes wall shows name, blood group and district only.</li>
+          <li>To add or reset an admin, run <code className="rounded bg-sand px-1.5 py-0.5 text-ink">npm run admin</code> on the server project (see README).</li>
+        </ul>
+      </div>
+    </div>
+  )
+}
 
-  if (admin === undefined) return <section className="min-h-[80vh]" />
-  if (!admin) return <Login onDone={setAdmin} />
+export default function AdminApp() {
+  const [admin, setAdmin] = useState(undefined) // undefined = checking, null = signed out
+  const [tab, setTab] = useState('donors')
+  const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    currentAdmin().then(setAdmin).catch(() => setAdmin(null))
+  }, [])
+
+  const leave = async (text = '') => {
+    try {
+      await signOut()
+    } catch {}
+    setAdmin(null)
+    setNotice(text)
+  }
+
+  // Auto sign-out after a stretch with no clicks, keys or scrolling
+  useEffect(() => {
+    if (!admin) return
+    let t
+    const arm = () => {
+      clearTimeout(t)
+      t = setTimeout(() => leave(`Signed out after ${IDLE_MINUTES} minutes of inactivity.`), IDLE_MINUTES * 60000)
+    }
+    const events = ['pointerdown', 'keydown', 'scroll', 'touchstart']
+    events.forEach((e) => window.addEventListener(e, arm, { passive: true }))
+    arm()
+    return () => {
+      clearTimeout(t)
+      events.forEach((e) => window.removeEventListener(e, arm))
+    }
+  }, [admin])
+
+  if (admin === undefined) return <main className="min-h-screen" />
+  if (!admin) {
+    return (
+      <>
+        {notice && (
+          <p className="fixed left-1/2 top-6 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-5 py-3 text-[14px] text-cream shadow-xl">
+            <Info /> {notice}
+          </p>
+        )}
+        <Login
+          onDone={(a) => {
+            setNotice('')
+            setAdmin(a)
+          }}
+        />
+      </>
+    )
+  }
+
+  const onAuthError = () => leave('Your session has expired. Please sign in again.')
 
   return (
-    <section className="container-x pb-24 pt-32 sm:pt-36">
-      {!isLive && (
-        <p className="mb-6 flex items-start gap-2 rounded-2xl bg-gold/15 p-4 text-[14px]">
-          <Info size={18} className="mt-0.5 shrink-0" />
-          Demo mode: data lives only in this browser. Connect Firebase to collect real registrations from everyone.
-        </p>
-      )}
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <span className="eyebrow">Samarpita admin</span>
-          <h1 className="h-display mt-3 text-[clamp(2.75rem,6vw,4.5rem)]">Dashboard</h1>
+    <>
+      <header className="sticky top-0 z-40 border-b border-line bg-cream/90 backdrop-blur">
+        <div className="container-x flex h-20 items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <LogoMark size={96} className="h-11 w-11" />
+            <div className="leading-tight">
+              <p className="font-display text-2xl">Samarpita</p>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted">Admin panel</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <a href={siteUrl} target="_blank" rel="noreferrer" className="hidden items-center gap-2 rounded-full border border-line px-4 py-3 text-[14px] font-semibold sm:inline-flex">
+              <ArrowSquareOut /> Website
+            </a>
+            <ThemeToggle />
+            <button onClick={() => leave()} className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-3 text-[14px] font-semibold">
+              <SignOut /> <span className="hidden sm:inline">Sign out</span>
+            </button>
+          </div>
         </div>
-        <button onClick={() => signOut().then(() => setAdmin(null))} className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-[14px] font-semibold">
-          <SignOut /> Sign out
-        </button>
-      </div>
-      <div className="relative mt-8 inline-grid grid-cols-2 rounded-full bg-sand p-1.5">
-        {[
-          ['donors', 'Blood donors', UsersThree],
-          ['feedback', 'Feedback', ChatCircleText],
-        ].map(([k, l, Icon]) => (
-          <button key={k} onClick={() => setTab(k)} className="relative z-10 flex items-center gap-2 rounded-full px-5 py-3 text-[14px] font-semibold">
-            {tab === k && <motion.span layoutId="admintab" className="absolute inset-0 -z-10 rounded-full bg-ink" />}
-            <Icon className={tab === k ? 'text-cream' : ''} /> <span className={tab === k ? 'text-cream' : 'text-ink/70'}>{l}</span>
-          </button>
-        ))}
-      </div>
-      <div className="mt-8">{tab === 'donors' ? <Donors /> : <Feedback />}</div>
-    </section>
+      </header>
+
+      <main className="container-x pb-24 pt-10">
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <span className="eyebrow">Signed in as {admin.email}</span>
+            <h1 className="h-display mt-3 text-[clamp(2.75rem,6vw,4.5rem)]">Dashboard</h1>
+          </div>
+        </div>
+        <div className="relative mt-8 inline-grid grid-cols-3 rounded-full bg-sand p-1.5">
+          {[
+            ['donors', 'Blood donors', UsersThree],
+            ['feedback', 'Feedback', ChatCircleText],
+            ['security', 'Security', LockKey],
+          ].map(([k, l, Icon]) => (
+            <button key={k} onClick={() => setTab(k)} className="relative z-10 flex items-center gap-2 rounded-full px-4 py-3 text-[14px] font-semibold sm:px-5">
+              {tab === k && <motion.span layoutId="admintab" className="absolute inset-0 -z-10 rounded-full bg-ink" />}
+              <Icon className={tab === k ? 'text-cream' : ''} /> <span className={tab === k ? 'text-cream' : 'text-ink/70'}>{l}</span>
+            </button>
+          ))}
+        </div>
+        <div className="mt-8">
+          {tab === 'donors' && <Donors onAuthError={onAuthError} />}
+          {tab === 'feedback' && <Feedback onAuthError={onAuthError} />}
+          {tab === 'security' && <Security email={admin.email} onPasswordChanged={() => leave('Password changed. Sign in with your new password.')} />}
+        </div>
+      </main>
+    </>
   )
 }

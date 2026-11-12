@@ -1,9 +1,9 @@
 # Samarpita Social Foundation Trust — Seva hi Samarpan
 
 Website for **Team Samarpita**, a team of social workers from Odisha who help anyone in need.
-People can share their problem through the Contact Us page, and blood donors can register on the Blood Donation page. Both reach the team by email.
+People can share their problem through the Contact Us page, and blood donors can register on the Blood Donation page. Registrations and feedback are saved through the site's own API and also reach the team by email.
 
-**Live site:** https://mohan-kumar-dalei.github.io/samarpita/
+Hosted on **Vercel** (website + API).
 
 ## Pages
 - Home
@@ -15,6 +15,7 @@ People can share their problem through the Contact Us page, and blood donors can
 
 ## Tech
 React + Vite, Tailwind CSS v4, GSAP (ScrollTrigger), Framer Motion, Lenis smooth scroll, Phosphor Icons.
+API: Express on Vercel serverless functions, MongoDB Atlas, bcrypt + JWT for the admin login.
 Black and green theme with a light/dark mode toggle. Photos are served from ImageKit.
 
 ## Run locally
@@ -31,30 +32,46 @@ npm run dev
 - All forms (contact, blood donor, volunteer, feedback) send mail to `site.email` using [FormSubmit](https://formsubmit.co). After the first message, FormSubmit sends a one-time activation email to that address. Click the link in it once and every message after that is delivered.
 
 ## Admin panel (blood donors & feedback)
-Open `/#/admin` on the site, e.g. https://mohan-kumar-dalei.github.io/samarpita/#/admin
+The admin panel is a separate page: **`/admin`** (for example `https://your-site.vercel.app/admin`).
+It is not linked from the website and is marked `noindex`.
 
+- Sign in with **email + password**
 - See every registered blood donor, filter by blood group / district / status, call or WhatsApp them, export CSV
-- Mark a donor as **Donated** to create a luxury thank-you card (download as PNG or send on WhatsApp)
+- Mark a donor as **Donated** to create a thank-you card (download as PNG or send on WhatsApp)
 - Donors who agreed are shown on the public **Blood Heroes** wall (name, group, district only)
 - Read feedback sent from the Contact page and choose which to show on the website
+- **Security** tab: change your password
 
-### Demo mode
-Until Firebase is connected, the site runs in demo mode: data is saved only in the visitor's own browser
-and the admin password is `samarpita-demo`. Form emails still reach the team through FormSubmit.
+### How it is secured
+- The site has its own API (`api/index.js`, an Express app that Vercel runs as a serverless function).
+- Passwords are stored only as **bcrypt** hashes (12 rounds). Nobody, including the developer, can read them back.
+- A sign-in returns a signed **JWT** in an `httpOnly`, `SameSite=Strict`, `Secure` cookie. Page scripts cannot read it and other websites cannot send it. It expires after 8 hours (`SESSION_HOURS`), and the panel signs itself out after 30 minutes without activity.
+- 5 wrong passwords lock the account for 15 minutes; sign-in and public forms are rate limited per IP.
+- Mutating requests must come from the site's own origin (CSRF protection), request bodies are validated and size-limited, and admin routes return donor data only to a valid session.
+- The admin page is served with a strict Content-Security-Policy, `X-Frame-Options: DENY` and `noindex` (see `vercel.json`).
 
-### Go live with Firebase (free plan is enough)
-1. Create a project at https://console.firebase.google.com
-2. **Build → Firestore Database → Create database** (production mode)
-3. **Firestore → Rules**: paste the contents of `firestore.rules` and publish
-4. **Build → Authentication → Sign-in method**: enable **Google**
-5. **Authentication → Settings → Authorized domains**: add `mohan-kumar-dalei.github.io`
-6. **Project settings → Your apps → Web app**: copy the config into `src/lib/firebaseConfig.js`
-7. Push to `main`. Sign in to `/#/admin` with the Google account `samarpitateam@gmail.com`
+## Deploy on Vercel
+1. Create a free **MongoDB Atlas** cluster (M0), add a database user, allow access from anywhere (Vercel IPs change), and copy the connection string.
+2. Import the GitHub repo in Vercel (framework: Vite). Build command `npm run build` and output `dist` are detected automatically.
+3. In **Project → Settings → Environment Variables** add (see `.env.example`):
+   - `MONGODB_URI` – the Atlas connection string
+   - `JWT_SECRET` – a long random string, e.g. `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`
+   - `ADMIN_EMAIL` and `ADMIN_PASSWORD` – the first admin account. It is created automatically the first time someone signs in. After signing in, change the password from the **Security** tab and remove `ADMIN_PASSWORD` from Vercel.
+4. Deploy. Open `/admin` and sign in.
 
-To add another admin, add the email in both `src/lib/firebaseConfig.js` and `firestore.rules`.
+### Managing admins from the terminal
+With `MONGODB_URI` in a local `.env`:
+```bash
+npm run admin -- list
+npm run admin -- add someone@example.com "a-strong-password-123"
+npm run admin -- password someone@example.com "new-password-456"
+npm run admin -- remove someone@example.com
+```
+
+### Local development
+`npm run dev` serves the website at `http://localhost:5173/` (clean URLs such as `/about`), the admin at `/admin`, and the API at `/api/*`.
+Without a `.env`, data is kept **in memory** (lost on restart) and a dev login is printed in the terminal:
+`admin@samarpita.local` / `samarpita-dev-1234`. Copy `.env.example` to `.env` to use a real database locally.
 
 ## Instagram reels
 Add reel links to `reels` in `src/data/site.js`; they appear in the "Seva in action" section on the home page.
-
-## Deploy
-Every push to `main` builds the site and publishes it to the `gh-pages` branch through GitHub Actions.

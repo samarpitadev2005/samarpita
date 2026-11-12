@@ -22,6 +22,13 @@ export const site = {
   phoneRaw: '+919583463595',
   whatsapp: '+91 95834 63595',
   whatsappLink: 'https://wa.me/919583463595',
+  // Every number people can call; the first one is the main helpline shown on buttons
+  phones: [
+    { label: 'Helpline', number: '+91 95834 63595', raw: '+919583463595' },
+    { label: 'Team', number: '+91 82607 33288', raw: '+918260733288' },
+    { label: 'Team', number: '+91 73260 59766', raw: '+917326059766' },
+    { label: 'Team', number: '+91 77498 97726', raw: '+917749897726' },
+  ],
   address: 'Odisha, India',
   hours: 'Mon to Sat, 9:00 AM to 7:00 PM',
   socials: {
@@ -53,6 +60,20 @@ export const images = {
   teamSmall: ik('team-samarpita-group.jpg', 'w-1200'),
   founder: ik('founder.jpg', 'w-900'),
 }
+
+// Team members shown in the arc gallery on the About page.
+// Upload each photo to ImageKit under samarpita/team/ and set it with ik('team/<file>.jpg', 'w-600').
+// Leave photo as null until the picture is ready; the card then shows the member's initials.
+export const team = [
+  { name: 'Founder', role: 'Founder & President', photo: images.founder },
+  { name: 'Team Member', role: 'Secretary', photo: null },
+  { name: 'Team Member', role: 'Treasurer', photo: null },
+  { name: 'Team Member', role: 'Blood Donation Lead', photo: null },
+  { name: 'Team Member', role: 'Education Coordinator', photo: null },
+  { name: 'Team Member', role: 'Health Camp Coordinator', photo: null },
+  { name: 'Team Member', role: 'Volunteer', photo: null },
+  { name: 'Team Member', role: 'Volunteer', photo: null },
+]
 
 export const nav = [
   { label: 'Home', to: '/' },

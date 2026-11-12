@@ -6,25 +6,35 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "admin": "node scripts/admin.mjs"
   },
   "dependencies": {
     "@fontsource-variable/manrope": "^5.1.0",
     "@fontsource/instrument-serif": "^5.1.0",
     "@phosphor-icons/react": "^2.1.7",
-    "firebase": "^11.0.2",
+    "bcryptjs": "^3.0.3",
+    "express": "^4.22.3",
+    "express-rate-limit": "^8.7.4",
     "framer-motion": "^11.11.17",
     "gsap": "^3.12.5",
+    "helmet": "^8.3.0",
     "html-to-image": "^1.11.11",
+    "jsonwebtoken": "^9.0.3",
     "lenis": "^1.1.18",
+    "mongodb": "^7.8.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^6.28.0"
+    "react-router-dom": "^6.28.0",
+    "three": "^0.187.0"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.11",
     "@vitejs/plugin-react": "^4.3.4",
     "tailwindcss": "^4.1.11",
     "vite": "^5.4.11"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

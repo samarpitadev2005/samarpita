@@ -9,6 +9,7 @@ import Button from '../components/Button'
 import CTABand from '../components/CTABand'
 import { images, values, services, site } from '../data/site'
 import OdiaWord from '../components/OdiaWord'
+import TeamArc from '../components/TeamArc'
 
 function TeamPhoto() {
   const ref = useRef(null)
@@ -202,6 +203,7 @@ export default function About() {
         text="We are a team of social workers from Odisha who believe every person deserves to be heard, supported and treated with dignity."
       />
       <TeamPhoto />
+      <TeamArc />
       <FounderCard />
       <MissionVision />
       <Values />
