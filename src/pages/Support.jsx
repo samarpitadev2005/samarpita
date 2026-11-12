@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { HandCoins, UsersThree, Handshake, QrCode, Bank, Copy, Check, Certificate, ShieldCheck, Seal, CheckCircle } from '@phosphor-icons/react'
+import { HandCoins, UsersThree, Handshake, QrCode, Phone, WhatsappLogo, EnvelopeSimple, Certificate, ShieldCheck, Seal, CheckCircle } from '@phosphor-icons/react'
 import { gsap } from '../lib/gsap'
 import PageHero from '../components/PageHero'
 import SplitHeading from '../components/SplitHeading'
@@ -8,9 +8,10 @@ import Reveal from '../components/Reveal'
 import Button from '../components/Button'
 import { sendForm } from '../lib/mail'
 import { getLenis } from '../lib/lenis'
+import { site } from '../data/site'
 
 const ways = [
-  { icon: HandCoins, title: 'Donate', text: 'Your contribution funds education kits, medicines and relief for families in need.', href: '#donate', cta: 'Donate now' },
+  { icon: HandCoins, title: 'Contribute', text: 'Your contribution funds education kits, medicines and relief for families in need.', href: '#donate', cta: 'Contact us to contribute' },
   { icon: UsersThree, title: 'Volunteer', text: 'Give a few hours a week to teach, organise camps or help people with paperwork.', href: '#volunteer', cta: 'Join as volunteer' },
   { icon: Handshake, title: 'Partner with us', text: 'Companies and institutions can partner through CSR to create lasting impact.', href: '#volunteer', cta: 'Become a partner' },
 ]
@@ -21,8 +22,6 @@ const allocation = [
   { label: 'Relief & food', pct: 20 },
   { label: 'Operations', pct: 10 },
 ]
-
-const amounts = [500, 1000, 2500, 5000]
 
 function Ways() {
   return (
@@ -55,124 +54,63 @@ function Ways() {
   )
 }
 
-function CopyRow({ label, value }) {
-  const [copied, setCopied] = useState(false)
-  return (
-    <div className="flex items-center justify-between gap-4 border-b border-cream/10 py-3 last:border-0">
-      <span className="text-[13px] text-muted">{label}</span>
-      <button
-        onClick={() => {
-          navigator.clipboard?.writeText(value)
-          setCopied(true)
-          setTimeout(() => setCopied(false), 1500)
-        }}
-        className="flex items-center gap-2 text-right font-medium"
-      >
-        {value}
-        {copied ? <Check size={14} className="text-brand" /> : <Copy size={14} className="text-muted" />}
-      </button>
-    </div>
-  )
-}
-
+// Online payment is not live yet. Until the QR code is ready, people who want to contribute
+// are asked to reach the team directly.
 function Donate() {
-  const [amount, setAmount] = useState(1000)
-  const [custom, setCustom] = useState('')
-  const [monthly, setMonthly] = useState(false)
-  const value = custom ? Number(custom) : amount
-
+  const helpline = site.phones[0]
   return (
     <section id="donate" className="bg-linen py-24 sm:py-32">
       <div className="container-x grid gap-12 lg:grid-cols-12">
         <div className="lg:col-span-5">
-          <span className="eyebrow">Make a donation</span>
+          <span className="eyebrow">Contribute</span>
           <SplitHeading lines={['Every rupee', 'reaches a *life*']} className="mt-5 text-[clamp(2.75rem,5.5vw,5rem)]" />
           <p className="mt-6 max-w-md leading-relaxed text-muted">
-            We publish a yearly report of every donation and how it was used. Donations are eligible for tax benefits under Section 80G.
+            Every contribution goes directly into education kits, medicines, blood donation camps and relief for families in need. We share with every supporter how their help was used.
           </p>
         </div>
 
         <Reveal className="lg:col-span-7">
           <div data-reveal className="rounded-[2rem] border border-line bg-cream p-6 shadow-[0_30px_80px_-40px_rgba(16,35,31,0.35)] sm:p-10">
-            <div className="relative grid grid-cols-2 rounded-full bg-sand p-1.5">
-              {['One-time', 'Monthly'].map((l, i) => {
-                const active = monthly === (i === 1)
-                return (
-                  <button key={l} onClick={() => setMonthly(i === 1)} className="relative z-10 rounded-full py-3 text-[15px] font-semibold">
-                    {active && (
-                      <motion.span layoutId="freq" className="absolute inset-0 -z-10 rounded-full bg-ink" transition={{ type: 'spring', stiffness: 400, damping: 34 }} />
-                    )}
-                    <span className={active ? 'text-cream' : 'text-ink/60'}>{l}</span>
-                  </button>
-                )
-              })}
+            <h3 className="font-display text-4xl leading-tight sm:text-5xl">
+              Want to contribute? <span className="italic text-brand">Talk to us.</span>
+            </h3>
+            <p className="mt-4 max-w-lg leading-relaxed text-muted">
+              Online payments are being set up. Until then, please call, WhatsApp or email our team and we will guide you personally on how to contribute, whether it is money, materials or your time.
+            </p>
+
+            <div className="mt-8 grid gap-3 sm:grid-cols-3">
+              <a href={`tel:${helpline.raw}`} className="group flex flex-col gap-3 rounded-2xl border border-line bg-linen p-5 transition-colors hover:border-ink">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand transition-colors group-hover:bg-mint group-hover:text-night"><Phone size={22} weight="duotone" /></span>
+                <span>
+                  <span className="block text-[12px] font-semibold uppercase tracking-[0.18em] text-muted">Call</span>
+                  <span className="mt-1 block font-semibold">{helpline.number}</span>
+                </span>
+              </a>
+              <a href={site.whatsappLink} target="_blank" rel="noreferrer" className="group flex flex-col gap-3 rounded-2xl border border-line bg-linen p-5 transition-colors hover:border-ink">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand transition-colors group-hover:bg-mint group-hover:text-night"><WhatsappLogo size={22} weight="duotone" /></span>
+                <span>
+                  <span className="block text-[12px] font-semibold uppercase tracking-[0.18em] text-muted">WhatsApp</span>
+                  <span className="mt-1 block font-semibold">{site.whatsapp}</span>
+                </span>
+              </a>
+              <a href={`mailto:${site.email}?subject=I%20want%20to%20contribute`} className="group flex flex-col gap-3 rounded-2xl border border-line bg-linen p-5 transition-colors hover:border-ink">
+                <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-soft text-brand transition-colors group-hover:bg-mint group-hover:text-night"><EnvelopeSimple size={22} weight="duotone" /></span>
+                <span>
+                  <span className="block text-[12px] font-semibold uppercase tracking-[0.18em] text-muted">Email</span>
+                  <span className="mt-1 block break-all font-semibold">{site.email}</span>
+                </span>
+              </a>
             </div>
 
-            <p className="label mt-8">Choose an amount</p>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              {amounts.map((a) => (
-                <button
-                  key={a}
-                  onClick={() => {
-                    setAmount(a)
-                    setCustom('')
-                  }}
-                  className={`rounded-2xl border py-4 text-lg font-semibold transition-all duration-300 ${
-                    !custom && amount === a ? 'border-mint bg-mint text-night shadow-lg shadow-mint/30' : 'border-line hover:border-ink'
-                  }`}
-                >
-                  ₹{a.toLocaleString('en-IN')}
-                </button>
-              ))}
-            </div>
-            <div className="relative mt-3">
-              <span className="absolute left-5 top-1/2 -translate-y-1/2 font-semibold text-muted">₹</span>
-              <input
-                type="number"
-                min="1"
-                placeholder="Enter custom amount"
-                value={custom}
-                onChange={(e) => setCustom(e.target.value)}
-                className="field pl-10"
-              />
-            </div>
-
-            <div className="mt-8 flex flex-col items-start justify-between gap-6 rounded-2xl bg-sand/60 p-5 sm:flex-row sm:items-center">
-              <div>
-                <p className="text-[13px] text-muted">You are giving</p>
-                <AnimatePresence mode="wait">
-                  <motion.p
-                    key={`${value}-${monthly}`}
-                    initial={{ y: 12, opacity: 0 }}
-                    animate={{ y: 0, opacity: 1 }}
-                    exit={{ y: -12, opacity: 0 }}
-                    transition={{ duration: 0.3 }}
-                    className="font-display text-4xl"
-                  >
-                    ₹{(value || 0).toLocaleString('en-IN')}
-                    <span className="text-lg text-muted">{monthly ? ' / month' : ''}</span>
-                  </motion.p>
-                </AnimatePresence>
-              </div>
-              <Button variant="accent">Donate now</Button>
-            </div>
-
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              <div className="flex items-center gap-4 rounded-2xl border border-line p-4">
-                <div className="grid h-24 w-24 shrink-0 place-items-center rounded-xl bg-ink text-cream">
-                  <QrCode size={64} weight="thin" />
-                </div>
+            <div className="mt-6 flex flex-col items-start justify-between gap-5 rounded-2xl bg-sand/60 p-5 sm:flex-row sm:items-center">
+              <div className="flex items-center gap-4">
+                <span className="grid h-16 w-16 shrink-0 place-items-center rounded-xl border border-dashed border-ink/30 text-muted"><QrCode size={34} weight="thin" /></span>
                 <div>
-                  <p className="font-semibold">Scan &amp; pay with UPI</p>
-                  <p className="mt-1 text-[13px] text-muted">samarpita@upi</p>
+                  <p className="font-semibold">UPI QR code coming soon</p>
+                  <p className="mt-0.5 text-[13px] text-muted">Scan-and-pay will appear here once it is ready.</p>
                 </div>
               </div>
-              <div className="theme-dark rounded-2xl bg-cream p-4 text-[13px] ring-1 ring-line">
-                <p className="mb-1 flex items-center gap-2 font-semibold"><Bank size={16} className="text-brand" /> Bank transfer</p>
-                <CopyRow label="A/c name" value="Samarpita Trust" />
-                <CopyRow label="A/c no." value="1234 5678 9012" />
-                <CopyRow label="IFSC" value="SBIN0001234" />
-              </div>
+              <Button to="/contact" variant="accent">Contact us</Button>
             </div>
           </div>
         </Reveal>
