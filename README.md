@@ -33,7 +33,7 @@ npm run dev
 - SEO: per-page titles, descriptions and share cards live in each page's `<Seo … />` (see `src/components/Seo.jsx`); defaults, Open Graph tags and the organisation's structured data are in `index.html`; `public/robots.txt` and `public/sitemap.xml` list the pages. Update `siteUrl` in `src/data/site.js`, the sitemap and `index.html` when the custom domain is connected.
 
 ## Admin panel (blood donors & feedback)
-The admin panel is a separate page: **`/admin`** (for example `https://your-site.vercel.app/admin`).
+The admin panel is a separate page: **`/admin`** (`https://samarpita.org/admin`).
 It is not linked from the website and is marked `noindex`.
 
 - Sign in with **email + password**
