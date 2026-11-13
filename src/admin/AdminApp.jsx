@@ -22,6 +22,10 @@ import {
   ArrowSquareOut,
   ShieldCheck,
   Info,
+  Envelope,
+  EnvelopeOpen,
+  Tray,
+  Siren,
 } from '@phosphor-icons/react'
 import ThankYouCard from '../components/ThankYouCard'
 import ThemeToggle from '../components/ThemeToggle'
@@ -38,6 +42,9 @@ import {
   listFeedback,
   updateFeedback,
   deleteFeedback,
+  listMessages,
+  updateMessage,
+  deleteMessage,
 } from '../lib/store'
 
 /*
@@ -365,6 +372,115 @@ function Feedback({ onAuthError }) {
   )
 }
 
+// Problems sent from the Contact page and volunteer sign-ups from Support
+function Messages({ onAuthError }) {
+  const [rows, setRows] = useState(null)
+  const [kind, setKind] = useState('all') // all | problem | volunteer
+  const [open, setOpen] = useState(null)
+  const guard = (p) => p.catch((e) => (e.status === 401 ? onAuthError() : null))
+  const load = () => guard(listMessages().then(setRows)).then(() => setRows((r) => r || []))
+  useEffect(() => {
+    load()
+  }, [])
+  const list = (rows || []).filter((m) => kind === 'all' || m.type === kind)
+  const unread = (rows || []).filter((m) => !m.read).length
+  const toggleRead = (m, read = !m.read) => {
+    setRows((rs) => rs.map((x) => (x.id === m.id ? { ...x, read } : x)))
+    guard(updateMessage(m.id, { read }))
+  }
+  const openOne = (m) => {
+    setOpen(open === m.id ? null : m.id)
+    if (!m.read) toggleRead(m, true)
+  }
+  const remove = (m) => {
+    if (!confirm('Delete this message?')) return
+    setRows((rs) => rs.filter((x) => x.id !== m.id))
+    guard(deleteMessage(m.id))
+  }
+  const detail = (m) =>
+    m.type === 'problem'
+      ? [
+          ['Category', m.category],
+          ['Urgency', m.urgency],
+          ['City / Village', m.city],
+          ['Email', m.email],
+          ['Attachment', m.attachmentNote],
+        ]
+      : [
+          ['Area of interest', m.interest],
+          ['Availability', m.availability],
+          ['City / Village', m.city],
+          ['Email', m.email],
+        ]
+  return (
+    <div>
+      <div className="flex flex-wrap items-center gap-2">
+        {[
+          ['all', 'All'],
+          ['problem', 'Problems'],
+          ['volunteer', 'Volunteers'],
+        ].map(([k, l]) => (
+          <button key={k} onClick={() => setKind(k)} className={`rounded-full border px-4 py-2 text-[14px] font-semibold ${kind === k ? 'border-ink bg-ink text-cream' : 'border-line'}`}>
+            {l}
+          </button>
+        ))}
+        <span className="ml-auto text-[13px] text-muted">{unread ? `${unread} unread` : 'All read'}</span>
+        <button onClick={load} className="grid h-10 w-10 place-items-center rounded-full border border-line" aria-label="Refresh"><ArrowsClockwise /></button>
+      </div>
+      <div className="mt-6 space-y-3">
+        {rows === null && <p className="text-muted">Loading…</p>}
+        {rows && list.length === 0 && (
+          <p className="flex items-center justify-center gap-2 rounded-2xl border border-dashed border-line p-10 text-center text-muted"><Tray /> No messages yet.</p>
+        )}
+        {list.map((m) => (
+          <motion.div layout key={m.id} className={`rounded-2xl border bg-linen p-4 sm:p-5 ${m.read ? 'border-line' : 'border-brand/60 shadow-[0_0_0_3px_rgba(42,138,18,0.08)]'}`}>
+            <button onClick={() => openOne(m)} className="grid w-full gap-3 text-left sm:grid-cols-[auto_1fr_auto] sm:items-center">
+              <span className={`grid h-12 w-12 place-items-center rounded-2xl ${m.type === 'problem' ? (m.urgency === 'Urgent' ? 'bg-blood text-white' : 'bg-brand-soft text-brand') : 'bg-gold/20 text-night dark:text-gold'}`}>
+                {m.type === 'problem' ? (m.urgency === 'Urgent' ? <Siren weight="fill" /> : <ChatCircleText weight="duotone" />) : <UsersThree weight="duotone" />}
+              </span>
+              <span className="min-w-0">
+                <span className="flex flex-wrap items-center gap-2">
+                  <b className="truncate font-display text-2xl font-normal">{m.name}</b>
+                  <span className="rounded-full bg-sand px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{m.type === 'problem' ? 'Problem' : 'Volunteer'}</span>
+                  {m.type === 'problem' && m.urgency === 'Urgent' && <span className="rounded-full bg-blood/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-blood">Urgent</span>}
+                  {!m.read && <span className="h-2 w-2 rounded-full bg-brand" aria-label="Unread" />}
+                </span>
+                <span className="mt-1 block truncate text-[14px] text-muted">{m.type === 'problem' ? m.subject : [m.interest, m.availability].filter(Boolean).join(' · ') || 'Wants to volunteer'}</span>
+              </span>
+              <span className="text-[12px] text-muted sm:text-right">{fmt(m.createdAt)}</span>
+            </button>
+            <AnimatePresence initial={false}>
+              {open === m.id && (
+                <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+                  <div className="mt-4 border-t border-line pt-4">
+                    {m.message && <p className="whitespace-pre-wrap leading-relaxed">{m.message}</p>}
+                    <dl className="mt-4 grid gap-x-6 gap-y-1 text-[13px] sm:grid-cols-2">
+                      {detail(m)
+                        .filter(([, v]) => v)
+                        .map(([k, v]) => (
+                          <div key={k} className="flex gap-2"><dt className="shrink-0 font-semibold text-ink">{k}:</dt><dd className="min-w-0 break-words text-muted">{v}</dd></div>
+                        ))}
+                    </dl>
+                    <div className="mt-4 flex flex-wrap items-center gap-2">
+                      <a href={telLink(m.phone)} className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2.5 text-[13px] font-semibold text-cream"><Phone weight="bold" /> {m.phone}</a>
+                      <a href={waLink(m.phone)} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full bg-mint px-4 py-2.5 text-[13px] font-semibold text-night"><WhatsappLogo weight="bold" /> WhatsApp</a>
+                      {m.email && <a href={`mailto:${m.email}`} className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-[13px] font-semibold"><Envelope weight="bold" /> Email</a>}
+                      <button onClick={() => toggleRead(m)} className="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2.5 text-[13px] font-semibold">
+                        {m.read ? <><Envelope /> Mark unread</> : <><EnvelopeOpen /> Mark read</>}
+                      </button>
+                      <button onClick={() => remove(m)} className="ml-auto grid h-10 w-10 place-items-center rounded-full border border-line text-blood" aria-label="Delete"><Trash /></button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 function Security({ email, onPasswordChanged }) {
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
@@ -416,7 +532,7 @@ function Security({ email, onPasswordChanged }) {
 
 export default function AdminApp() {
   const [admin, setAdmin] = useState(undefined) // undefined = checking, null = signed out
-  const [tab, setTab] = useState('donors')
+  const [tab, setTab] = useState('messages')
   const [notice, setNotice] = useState('')
 
   useEffect(() => {
@@ -499,8 +615,9 @@ export default function AdminApp() {
             <h1 className="h-display mt-3 text-[clamp(2.75rem,6vw,4.5rem)]">Dashboard</h1>
           </div>
         </div>
-        <div className="relative mt-8 inline-grid grid-cols-3 rounded-full bg-sand p-1.5">
+        <div className="relative mt-8 inline-grid grid-cols-2 rounded-full bg-sand p-1.5 sm:grid-cols-4">
           {[
+            ['messages', 'Messages', Tray],
             ['donors', 'Blood donors', UsersThree],
             ['feedback', 'Feedback', ChatCircleText],
             ['security', 'Security', LockKey],
@@ -512,6 +629,7 @@ export default function AdminApp() {
           ))}
         </div>
         <div className="mt-8">
+          {tab === 'messages' && <Messages onAuthError={onAuthError} />}
           {tab === 'donors' && <Donors onAuthError={onAuthError} />}
           {tab === 'feedback' && <Feedback onAuthError={onAuthError} />}
           {tab === 'security' && <Security email={admin.email} onPasswordChanged={() => leave('Password changed. Sign in with your new password.')} />}

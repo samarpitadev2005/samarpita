@@ -130,3 +130,4 @@ export const collection = (name) => (usingMemory ? memoryCollection(name) : mong
 export const donors = collection('donors')
 export const feedback = collection('feedback')
 export const admins = collection('admins')
+export const messages = collection('messages')

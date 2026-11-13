@@ -5,7 +5,7 @@
 */
 export const isLive = true
 
-async function call(path, { method = 'GET', body } = {}) {
+export async function call(path, { method = 'GET', body } = {}) {
   const res = await fetch(`${import.meta.env.BASE_URL}api/${path}`, {
     method,
     credentials: 'same-origin',
@@ -43,3 +43,6 @@ export const deleteDonor = (id) => call(`admin/donors/${id}`, { method: 'DELETE'
 export const listFeedback = () => call('admin/feedback')
 export const updateFeedback = (id, patch) => call(`admin/feedback/${id}`, { method: 'PATCH', body: patch })
 export const deleteFeedback = (id) => call(`admin/feedback/${id}`, { method: 'DELETE' })
+export const listMessages = () => call('admin/messages')
+export const updateMessage = (id, patch) => call(`admin/messages/${id}`, { method: 'PATCH', body: patch })
+export const deleteMessage = (id) => call(`admin/messages/${id}`, { method: 'DELETE' })

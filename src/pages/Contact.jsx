@@ -9,8 +9,9 @@ import Accordion from '../components/Accordion'
 import SplitHeading from '../components/SplitHeading'
 import Select from '../components/Select'
 import { site } from '../data/site'
-import { sendForm } from '../lib/mail'
-import { addFeedback, isLive } from '../lib/store'
+import { sendMessage } from '../lib/mail'
+import { addFeedback } from '../lib/store'
+import Seo from '../components/Seo'
 
 const categories = ['Education', 'Health', 'Financial', 'Family / Women issue', 'Elderly care', 'Legal help', 'Other']
 
@@ -50,12 +51,7 @@ function ProblemForm() {
     delete data.attachment
     setStatus('sending')
     try {
-      await sendForm({
-        ...data,
-        urgency,
-        attachment_note: file && file.name ? `User has a file to share: ${file.name}` : '',
-        _subject: `[${urgency}] New problem: ${data.subject}`,
-      })
+      await sendMessage('problem', { ...data, urgency, attachmentNote: file && file.name ? `Has a file to share: ${file.name}` : '' })
       setStatus('sent')
       form.reset()
       setFileName('')
@@ -181,15 +177,8 @@ function FeedbackForm() {
     const data = Object.fromEntries(new FormData(e.currentTarget))
     const fb = { name: data.name.trim(), place: data.place.trim(), rating, message: data.message.trim() }
     setStatus('sending')
-    const mail = sendForm({ ...fb, rating: `${rating} / 5`, _subject: `[Feedback] ${rating}★ from ${fb.name}` })
     try {
-      if (isLive) {
-        await addFeedback(fb)
-        mail.catch(() => {})
-      } else {
-        await mail
-        await addFeedback(fb)
-      }
+      await addFeedback(fb)
       setStatus('sent')
     } catch {
       setStatus('error')
@@ -251,6 +240,7 @@ function FeedbackForm() {
 export default function Contact() {
   return (
     <>
+      <Seo title="Contact Us" description="Share your problem with Team Samarpita, Odisha. Call, WhatsApp or write to us; every message is read and answered within 24 to 48 hours, free and confidential." />
       <PageHero
         eyebrow="Contact us"
         crumb="Contact Us"

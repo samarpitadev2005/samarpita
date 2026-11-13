@@ -4,6 +4,7 @@ import { LogoMark } from './Logo'
 import OdiaWord from './OdiaWord'
 import { site } from '../data/site'
 import { ScrollTrigger } from '../lib/gsap'
+import { markReady } from '../lib/ready'
 
 // Branded loading screen on first paint: logo, the Odia wordmark and a progress line.
 // It waits for fonts and the window load event (at most MAX_MS), stays at least MIN_MS so it
@@ -37,6 +38,7 @@ export default function Preloader() {
       const wait = Math.max(0, min - (performance.now() - started))
       t = setTimeout(() => {
         setShow(false)
+        markReady()
         try {
           sessionStorage.setItem(KEY, '1')
         } catch {}

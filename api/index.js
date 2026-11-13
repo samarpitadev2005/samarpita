@@ -1,16 +1,17 @@
 import express from 'express'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
-import { donors, feedback, usingMemory } from './_lib/db.js'
+import { donors, feedback, messages, usingMemory } from './_lib/db.js'
+import { notifyLater, mailConfigured } from './_lib/mail.js'
 import { login, changePassword, sessionCookie, clearCookie, readSession, requireAdmin } from './_lib/auth.js'
 
 /*
   Samarpita API — one Express app, served by Vercel as a serverless function
   (vercel.json rewrites /api/* here) and mounted into the Vite dev server locally.
 
-  Public:  POST /api/donors · POST /api/feedback · GET /api/heroes · GET /api/feedback/featured
+  Public:  POST /api/donors · POST /api/feedback · POST /api/messages · GET /api/heroes · GET /api/feedback/featured
   Auth:    POST /api/auth/login · POST /api/auth/logout · GET /api/auth/me · POST /api/auth/password
-  Admin:   GET|PATCH|DELETE /api/admin/donors[/:id] · GET|PATCH|DELETE /api/admin/feedback[/:id]
+  Admin:   GET|PATCH|DELETE /api/admin/donors[/:id] · /api/admin/feedback[/:id] · /api/admin/messages[/:id]
 */
 
 const app = express()
@@ -51,7 +52,7 @@ const wrap = (fn) => (req, res) =>
   })
 
 // ---------- public ----------
-app.get('/api/health', (req, res) => res.json({ ok: true, storage: usingMemory ? 'memory' : 'mongodb' }))
+app.get('/api/health', (req, res) => res.json({ ok: true, storage: usingMemory ? 'memory' : 'mongodb', mail: mailConfigured }))
 
 app.post(
   '/api/donors',
@@ -78,6 +79,11 @@ app.post(
       return res.status(400).json({ error: 'Please check the name, phone number and blood group.' })
     }
     await donors.insert(donor)
+    notifyLater({
+      subject: `[Blood Donor] ${donor.group} | ${donor.name} | ${donor.district}`,
+      replyTo: donor.email,
+      fields: { 'Blood group': donor.group, Name: donor.name, Phone: donor.phone, Email: donor.email, Gender: donor.gender, Age: donor.age, 'Weight (kg)': donor.weight, District: donor.district, 'Area / Village': donor.area, 'Last donation': donor.lastDonation, Availability: donor.availability, 'Show on heroes wall': donor.showOnWall ? 'Yes' : 'No' },
+    })
     res.status(201).json({ ok: true })
   }),
 )
@@ -91,6 +97,47 @@ app.post(
     const item = { name: str(b.name, 100), place: str(b.place, 100), rating, message: str(b.message, 2000), featured: false, createdAt: now() }
     if (!item.name || !item.message || !(rating >= 1 && rating <= 5)) return res.status(400).json({ error: 'Please add your name, a rating and a message.' })
     await feedback.insert(item)
+    notifyLater({ subject: `[Feedback] ${rating}/5 from ${item.name}`, fields: { Name: item.name, Place: item.place, Rating: `${rating} / 5`, Message: item.message } })
+    res.status(201).json({ ok: true })
+  }),
+)
+
+// Contact-form problems and volunteer sign-ups: saved for the admin panel, then emailed to the team
+app.post(
+  '/api/messages',
+  formLimiter,
+  wrap(async (req, res) => {
+    const b = req.body || {}
+    const type = ['problem', 'volunteer'].includes(b.type) ? b.type : null
+    if (!type) return res.status(400).json({ error: 'Unknown message type.' })
+    const msg = { type, name: str(b.name, 100), email: str(b.email, 120), phone: str(b.phone, 20), city: str(b.city, 100), read: false, createdAt: now() }
+    if (type === 'problem') {
+      Object.assign(msg, {
+        category: str(b.category, 60),
+        urgency: b.urgency === 'Urgent' ? 'Urgent' : 'Normal',
+        subject: str(b.subject, 150),
+        message: str(b.message, 4000),
+        attachmentNote: str(b.attachmentNote, 200),
+      })
+      if (!msg.subject || !msg.message) return res.status(400).json({ error: 'Please add a subject and describe the problem.' })
+    } else {
+      Object.assign(msg, { interest: str(b.interest, 60), availability: str(b.availability, 40), message: str(b.message, 2000) })
+    }
+    if (!msg.name || !phoneOk(msg.phone) || !emailOk(msg.email)) return res.status(400).json({ error: 'Please check your name, phone number and email.' })
+    await messages.insert(msg)
+    notifyLater(
+      type === 'problem'
+        ? {
+            subject: `[${msg.urgency}] New problem: ${msg.subject}`,
+            replyTo: msg.email,
+            fields: { Name: msg.name, Phone: msg.phone, Email: msg.email, 'City / Village': msg.city, Category: msg.category, Urgency: msg.urgency, Subject: msg.subject, Message: msg.message, Attachment: msg.attachmentNote },
+          }
+        : {
+            subject: `[Volunteer] ${msg.name} | ${msg.interest || 'General'}`,
+            replyTo: msg.email,
+            fields: { Name: msg.name, Phone: msg.phone, Email: msg.email, 'City / Village': msg.city, 'Area of interest': msg.interest, Availability: msg.availability, Message: msg.message },
+          },
+    )
     res.status(201).json({ ok: true })
   }),
 )
@@ -191,6 +238,24 @@ admin.delete(
   '/feedback/:id',
   wrap(async (req, res) => {
     res.json({ ok: await feedback.remove(req.params.id) })
+  }),
+)
+
+admin.get('/messages', wrap(async (req, res) => res.json(await messages.all())))
+admin.patch(
+  '/messages/:id',
+  wrap(async (req, res) => {
+    const b = req.body || {}
+    if (b.read === undefined) return res.status(400).json({ error: 'Nothing to update.' })
+    const row = await messages.update(req.params.id, { read: Boolean(b.read) })
+    if (!row) return res.status(404).json({ error: 'Message not found.' })
+    res.json(row)
+  }),
+)
+admin.delete(
+  '/messages/:id',
+  wrap(async (req, res) => {
+    res.json({ ok: await messages.remove(req.params.id) })
   }),
 )
 

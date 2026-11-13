@@ -7,7 +7,8 @@ import SplitHeading from '../components/SplitHeading'
 import Reveal from '../components/Reveal'
 import Button from '../components/Button'
 import Select from '../components/Select'
-import { sendForm } from '../lib/mail'
+import { sendMessage } from '../lib/mail'
+import Seo from '../components/Seo'
 import { getLenis } from '../lib/lenis'
 import { site } from '../data/site'
 
@@ -170,7 +171,7 @@ function VolunteerForm() {
     const data = Object.fromEntries(new FormData(form))
     setStatus('sending')
     try {
-      await sendForm({ ...data, _subject: `[Volunteer] ${data.name} | ${data.interest || 'General'}` })
+      await sendMessage('volunteer', data)
       setStatus('sent')
     } catch {
       setStatus('error')
@@ -253,6 +254,7 @@ function Trust() {
 export default function Support() {
   return (
     <>
+      <Seo title="Support Us" description="Volunteer, partner or contribute to Samarpita Social Foundation Trust, Odisha. Your time, skills or support helps families with education, healthcare, blood donation and relief." />
       <PageHero
         eyebrow="Support us"
         crumb="Support Us"

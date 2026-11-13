@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import PageHero from '../components/PageHero'
+import Seo from '../components/Seo'
 import { getLenis } from '../lib/lenis'
 import { site } from '../data/site'
 
@@ -47,6 +48,7 @@ function LegalPage({ title, crumb, sections }) {
 
   return (
     <>
+      <Seo title={crumb} description={`${crumb} of Samarpita Social Foundation Trust, Odisha.`} />
       <PageHero eyebrow="Legal" crumb={crumb} lines={[title]} text="Last updated: October 2026" />
       <section className="container-x pb-24 sm:pb-36">
         <div className="grid gap-12 border-t border-line pt-12 lg:grid-cols-12">

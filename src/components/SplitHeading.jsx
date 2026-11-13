@@ -1,5 +1,6 @@
 import { Fragment, useLayoutEffect, useRef } from 'react'
 import { gsap } from '../lib/gsap'
+import { whenReady } from '../lib/ready'
 
 // Splits a heading into words and slides each one up from a mask.
 // Pass `lines` as an array; wrap a word in *asterisks* to render it in brand-green italic.
@@ -7,15 +8,18 @@ export default function SplitHeading({ lines, as: Tag = 'h2', className = '', de
   const ref = useRef(null)
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
-      gsap.from(ref.current.querySelectorAll('.word-inner'), {
+      const tween = gsap.from(ref.current.querySelectorAll('.word-inner'), {
         yPercent: 110,
         rotate: 4,
         duration: 1.2,
         ease: 'expo.out',
         stagger: 0.06,
         delay,
+        paused: !onScroll,
         scrollTrigger: onScroll ? { trigger: ref.current, start: 'top 88%', toggleActions: 'play none none none' } : undefined,
       })
+      // Headings that animate on mount hold until the loading screen lifts
+      if (!onScroll) whenReady().then(() => tween.play())
     }, ref)
     return () => ctx.revert()
   }, [delay, onScroll])

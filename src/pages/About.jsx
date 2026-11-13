@@ -10,6 +10,7 @@ import CTABand from '../components/CTABand'
 import { images, values, services, site } from '../data/site'
 import OdiaWord from '../components/OdiaWord'
 import TeamArc from '../components/TeamArc'
+import Seo from '../components/Seo'
 
 function TeamPhoto() {
   const ref = useRef(null)
@@ -196,6 +197,7 @@ function FocusAreas() {
 export default function About() {
   return (
     <>
+      <Seo title="About Us" description="Team Samarpita is a group of young social workers and volunteers from Odisha dedicated to education, healthcare, blood donation, women's empowerment and relief for anyone in need." />
       <PageHero
         eyebrow="About Team Samarpita"
         crumb="About Us"

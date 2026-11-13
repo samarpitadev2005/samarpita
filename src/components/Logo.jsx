@@ -1,12 +1,13 @@
 import { Link } from 'react-router-dom'
+import { images } from '../data/site'
 
-// Files in /public need the site's base path (the site is served from /samarpita/)
+// Files in /public need the site's base path
 export const asset = (path) => `${import.meta.env.BASE_URL}${path}`
 
 export function LogoMark({ className = 'h-11 w-11', size = 96 }) {
   return (
     <img
-      src={asset(`brand/logo-${size}.webp`)}
+      src={images.logo(size)}
       alt="Samarpita logo"
       width={size}
       height={size}

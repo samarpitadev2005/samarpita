@@ -3,9 +3,8 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight } from '@phosphor-icons/react'
 import ArcGallery from '../ApexUI-Kit/ArcGallery/ArcGallery'
 import SplitHeading from './SplitHeading'
-import { asset } from './Logo'
 import JhotiPattern from './JhotiPattern'
-import { team } from '../data/site'
+import { team, images } from '../data/site'
 
 // Team photos on a half wheel (ApexUI arc gallery in radius mode) that turns around a
 // mandala motif. It drifts on its own, pauses on hover, and can be dragged, flicked
@@ -70,7 +69,7 @@ export default function TeamArc() {
         >
           <div className="absolute inset-[-10%] rounded-full bg-[radial-gradient(closest-side,rgba(247,196,8,0.22),transparent)]" />
           <img
-            src={asset('brand/mandala.jpg')}
+            src={images.mandala}
             alt=""
             draggable={false}
             className="relative h-full w-full mix-blend-multiply motion-reduce:animate-none animate-[spin_240s_linear_infinite] dark:invert dark:hue-rotate-180 dark:mix-blend-screen"

@@ -24,8 +24,8 @@ import Button from '../components/Button'
 import Select from '../components/Select'
 import Accordion from '../components/Accordion'
 import { site } from '../data/site'
-import { sendForm } from '../lib/mail'
-import { addDonor, listHeroes, isLive } from '../lib/store'
+import { addDonor, listHeroes } from '../lib/store'
+import Seo from '../components/Seo'
 import ThankYouCard from '../components/ThankYouCard'
 import OdiaWord from '../components/OdiaWord'
 
@@ -161,30 +161,8 @@ function RegisterForm() {
       availability: form.availability,
       showOnWall: form.showOnWall,
     }
-    // Live: the database is the source of truth and the email is a courtesy notification.
-    // Demo: the email is the only copy the team receives, so it must succeed.
-    const mail = sendForm({
-        _subject: `[Blood Donor] ${form.group} | ${form.name} | ${form.district}`,
-        'Blood group': form.group,
-        Name: form.name,
-        Phone: form.phone,
-        Email: form.email,
-        Gender: form.gender,
-        Age: form.age,
-        'Weight (kg)': form.weight,
-        District: form.district,
-        'Area / Village': form.area,
-        'Last donation': lastDonation,
-        Availability: form.availability,
-      })
     try {
-      if (isLive) {
-        await addDonor(record)
-        mail.catch(() => {})
-      } else {
-        await mail
-        await addDonor(record)
-      }
+      await addDonor(record)
       setStatus('sent')
     } catch {
       setStatus('error')
@@ -565,6 +543,7 @@ const faqs = [
 export default function BloodDonation() {
   return (
     <>
+      <Seo title="Blood Donation" description="Register as a blood donor with Team Samarpita, Odisha. When a patient needs your blood group, our team calls you. Free registration, every group welcome." />
       <PageHero
         eyebrow="Blood donation"
         crumb="Blood Donation"

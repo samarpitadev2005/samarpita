@@ -59,7 +59,15 @@ export const images = {
   team: ik('team-samarpita-group.jpg', 'w-2000'),
   teamSmall: ik('team-samarpita-group.jpg', 'w-1200'),
   founder: ik('founder.jpg', 'w-900'),
+  mandala: ik('brand/mandala.jpg', 'w-1000'),
+  logo: (size = 192) => ik('brand/logo-512.webp', `w-${size}`),
+  // Social share image (1200x630), cropped around the faces
+  share: ik('team-samarpita-group.jpg', 'w-1200,h-630,fo-auto'),
 }
+
+// Public address of the website, used for canonical links, the sitemap and share cards.
+// Change this once the custom domain is connected on Vercel.
+export const siteUrl = 'https://samarpita.vercel.app'
 
 // Team members shown in the arc gallery on the About page.
 // Photos live on ImageKit under samarpita/team/. To add someone: upload the photo there and add a line.

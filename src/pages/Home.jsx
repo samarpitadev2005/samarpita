@@ -27,17 +27,29 @@ import { images, services, stats, steps, testimonials, site } from '../data/site
 import OdiaWord from '../components/OdiaWord'
 import InstagramReels from '../components/InstagramReels'
 import { listFeaturedFeedback } from '../lib/store'
+import { useAppReady, whenReady } from '../lib/ready'
+import Seo from '../components/Seo'
 
 function Hero() {
   const ref = useRef(null)
+  const ready = useAppReady()
   useLayoutEffect(() => {
-    const ctx = gsap.context(() => {
-      gsap.from('.hero-odia', { y: 20, opacity: 0, duration: 1.2, ease: 'expo.out', delay: 0.3 })
-      gsap.from('.hero-photo', { clipPath: 'inset(12% 12% 12% 12% round 48px)', duration: 1.8, ease: 'expo.inOut', delay: 0.4 })
-      gsap.from('.hero-photo img', { scale: 1.3, duration: 2.2, ease: 'expo.out', delay: 0.5 })
-      gsap.from('.hero-chip', { y: 30, opacity: 0, duration: 1, ease: 'expo.out', delay: 1.4, stagger: 0.12 })
-    }, ref)
-    return () => ctx.revert()
+    // The intro starts once the loading screen lifts, so it is actually seen
+    let ctx
+    let cancelled = false
+    whenReady().then(() => {
+      if (cancelled) return
+      ctx = gsap.context(() => {
+        gsap.from('.hero-odia', { y: 20, opacity: 0, duration: 1.2, ease: 'expo.out', delay: 0.3 })
+        gsap.from('.hero-photo', { clipPath: 'inset(12% 12% 12% 12% round 48px)', duration: 1.8, ease: 'expo.inOut', delay: 0.4 })
+        gsap.from('.hero-photo img', { scale: 1.3, duration: 2.2, ease: 'expo.out', delay: 0.5 })
+        gsap.from('.hero-chip', { y: 30, opacity: 0, duration: 1, ease: 'expo.out', delay: 1.4, stagger: 0.12 })
+      }, ref)
+    })
+    return () => {
+      cancelled = true
+      ctx?.revert()
+    }
   }, [])
 
   return (
@@ -60,7 +72,7 @@ function Hero() {
           />
           <motion.p
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 1, delay: 1, ease: [0.22, 1, 0.36, 1] }}
             className="mt-6 max-w-lg text-[17px] leading-relaxed text-muted"
           >
@@ -68,7 +80,7 @@ function Hero() {
           </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={ready ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
             transition={{ duration: 1, delay: 1.15, ease: [0.22, 1, 0.36, 1] }}
             className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start"
           >
@@ -512,6 +524,7 @@ function Testimonials() {
 export default function Home() {
   return (
     <>
+      <Seo description="Samarpita Social Foundation Trust: young social workers from Odisha helping anyone in need with education, healthcare, blood donation, women's empowerment and relief. Share your problem, we are here to help." />
       <Hero />
       <div className="theme-dark border-y border-line bg-cream py-6">
         <Marquee items={['Education', 'Healthcare', 'Blood Donation', 'Women Empowerment', 'Elderly Care', 'Food & Relief']} />
