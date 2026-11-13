@@ -41,7 +41,7 @@ export const site = {
 }
 
 // Photos are served from ImageKit, which resizes and compresses them on the fly
-const ik = (file, tr = 'w-1600') => `https://ik.imagekit.io/h7wep5nji/samarpita/${file}?tr=${tr},q-80,f-auto`
+const ik = (file, tr = 'w-1600') => `https://ik.imagekit.io/nz9ttr2v7/samarpita/${file}?tr=${tr},q-80,f-auto`
 // Instagram reels shown on the site — add more reel links here
 export const reels = [
   'https://www.instagram.com/reel/DJxr4qETjtV/',
@@ -62,17 +62,32 @@ export const images = {
 }
 
 // Team members shown in the arc gallery on the About page.
-// Upload each photo to ImageKit under samarpita/team/ and set it with ik('team/<file>.jpg', 'w-600').
-// Leave photo as null until the picture is ready; the card then shows the member's initials.
+// Photos live on ImageKit under samarpita/team/. To add someone: upload the photo there and add a line.
+// Replace the placeholder names and roles below with the real ones.
 export const team = [
-  { name: 'Founder', role: 'Founder & President', photo: images.founder },
-  { name: 'Team Member', role: 'Secretary', photo: null },
-  { name: 'Team Member', role: 'Treasurer', photo: null },
-  { name: 'Team Member', role: 'Blood Donation Lead', photo: null },
-  { name: 'Team Member', role: 'Education Coordinator', photo: null },
-  { name: 'Team Member', role: 'Health Camp Coordinator', photo: null },
-  { name: 'Team Member', role: 'Volunteer', photo: null },
-  { name: 'Team Member', role: 'Volunteer', photo: null },
+  { name: 'Founder', role: 'Founder & President', photo: ik('founder.jpg', 'w-600') },
+  { name: 'Secretary', role: 'Secretary', photo: ik('team/secretary.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-01.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-02.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-03.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-04.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-05.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-06.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-07.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-08.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-09.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-10.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-11.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-12.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-13.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-14.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-15.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-16.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-17.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-18.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-19.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-20.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-21.jpg', 'w-600') },
 ]
 
 export const nav = [
