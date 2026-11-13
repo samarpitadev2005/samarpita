@@ -67,7 +67,7 @@ export const images = {
 
 // Public address of the website, used for canonical links, the sitemap and share cards.
 // Change this once the custom domain is connected on Vercel.
-export const siteUrl = 'https://samarpita.org'
+export const siteUrl = 'https://www.samarpita.org'
 
 // Team members shown in the arc gallery on the About page.
 // Photos live on ImageKit under samarpita/team/. To add someone: upload the photo there and add a line.

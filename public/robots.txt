@@ -4,4 +4,4 @@ Disallow: /admin
 Disallow: /admin.html
 Disallow: /api/
 
-Sitemap: https://samarpita.org/sitemap.xml
+Sitemap: https://www.samarpita.org/sitemap.xml
