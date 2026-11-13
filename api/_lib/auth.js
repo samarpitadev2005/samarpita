@@ -32,6 +32,8 @@ function require_random() {
   return Array.from({ length: 48 }, () => Math.floor(Math.random() * 36).toString(36)).join('')
 }
 
+export const signingSecret = secret
+
 export const hashPassword = (pw) => bcrypt.hash(pw, ROUNDS)
 let dummy = null
 const dummyHash = async () => (dummy ||= await bcrypt.hash('not-a-real-password', ROUNDS))

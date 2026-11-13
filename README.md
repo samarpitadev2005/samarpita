@@ -63,8 +63,9 @@ It is not linked from the website and is marked `noindex`.
 ### Email notifications (free, via Gmail)
 Messages are always saved for the admin panel. To also get them by email:
 1. On the team Gmail account turn on **2-Step Verification**, then open **Google Account → Security → 2-Step Verification → App passwords** and create one for "Samarpita website". Google shows a 16-character password once.
-2. Add to Vercel (and `.env` locally): `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=465`, `SMTP_USER=<the gmail address>`, `SMTP_PASS=<the app password>`, and optionally `MAIL_TO` if notifications should go somewhere else.
-3. Redeploy. `GET /api/health` shows `"mail": true` once it is configured. Each problem, volunteer sign-up, donor registration and feedback then arrives as an email with Reply-To set to the sender.
+2. In the admin panel open **Security → Email notifications**, enter the Gmail address, the app password and where notifications should go, save, then press **Send test email**. The app password is stored encrypted in the database (keyed from `JWT_SECRET`).
+   Alternatively set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` and `MAIL_TO` as environment variables; settings saved in the admin panel take precedence.
+3. `GET /api/health` shows `"mail": true` once it is configured. Each problem, volunteer sign-up, donor registration and feedback then arrives as an email with Reply-To set to the sender.
 
 ### Managing admins from the terminal
 With `MONGODB_URI` in a local `.env`:

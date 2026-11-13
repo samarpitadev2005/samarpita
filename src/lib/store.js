@@ -46,3 +46,7 @@ export const deleteFeedback = (id) => call(`admin/feedback/${id}`, { method: 'DE
 export const listMessages = () => call('admin/messages')
 export const updateMessage = (id, patch) => call(`admin/messages/${id}`, { method: 'PATCH', body: patch })
 export const deleteMessage = (id) => call(`admin/messages/${id}`, { method: 'DELETE' })
+export const getMailSettings = () => call('admin/settings/mail')
+export const saveMailSettings = (body) => call('admin/settings/mail', { method: 'PUT', body })
+export const clearMailSettings = () => call('admin/settings/mail', { method: 'DELETE' })
+export const sendTestMail = () => call('admin/settings/mail/test', { method: 'POST' })

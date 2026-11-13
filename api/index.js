@@ -2,7 +2,7 @@ import express from 'express'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import { donors, feedback, messages, usingMemory } from './_lib/db.js'
-import { notifyLater, mailConfigured } from './_lib/mail.js'
+import { notifyLater, notify, mailStatus, saveMailConfig, clearMailConfig } from './_lib/mail.js'
 import { login, changePassword, sessionCookie, clearCookie, readSession, requireAdmin } from './_lib/auth.js'
 
 /*
@@ -52,7 +52,10 @@ const wrap = (fn) => (req, res) =>
   })
 
 // ---------- public ----------
-app.get('/api/health', (req, res) => res.json({ ok: true, storage: usingMemory ? 'memory' : 'mongodb', mail: mailConfigured }))
+app.get(
+  '/api/health',
+  wrap(async (req, res) => res.json({ ok: true, storage: usingMemory ? 'memory' : 'mongodb', mail: (await mailStatus()).configured })),
+)
 
 app.post(
   '/api/donors',
@@ -256,6 +259,47 @@ admin.delete(
   '/messages/:id',
   wrap(async (req, res) => {
     res.json({ ok: await messages.remove(req.params.id) })
+  }),
+)
+
+// Email notification settings (the app password is stored encrypted and never returned)
+admin.get('/settings/mail', wrap(async (req, res) => res.json(await mailStatus())))
+admin.put(
+  '/settings/mail',
+  wrap(async (req, res) => {
+    const b = req.body || {}
+    const user = str(b.user, 120).toLowerCase()
+    const to = str(b.to, 120).toLowerCase()
+    const pass = typeof b.pass === 'string' ? b.pass.replace(/\s+/g, '') : ''
+    if (!user || !emailOk(user)) return res.status(400).json({ error: 'Enter the Gmail address that will send the emails.' })
+    if (to && !emailOk(to)) return res.status(400).json({ error: 'The "send to" address is not valid.' })
+    const current = await mailStatus()
+    if (!pass && current.source !== 'admin') return res.status(400).json({ error: 'Enter the app password.' })
+    if (pass && pass.length < 8) return res.status(400).json({ error: 'That app password looks too short.' })
+    await saveMailConfig({ user, pass, to })
+    res.json(await mailStatus())
+  }),
+)
+admin.delete(
+  '/settings/mail',
+  wrap(async (req, res) => {
+    await clearMailConfig()
+    res.json(await mailStatus())
+  }),
+)
+admin.post(
+  '/settings/mail/test',
+  wrap(async (req, res) => {
+    try {
+      const sent = await notify({
+        subject: 'Test email from the Samarpita website',
+        fields: { Status: 'Email notifications are working.', 'Sent by': req.admin.email, Time: new Date().toLocaleString('en-IN') },
+      })
+      if (!sent) return res.status(400).json({ error: 'Email is not set up yet.' })
+      res.json({ ok: true })
+    } catch (err) {
+      res.status(400).json({ error: `Could not send: ${err.message}` })
+    }
   }),
 )
 

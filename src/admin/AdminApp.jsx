@@ -26,6 +26,7 @@ import {
   EnvelopeOpen,
   Tray,
   Siren,
+  PaperPlaneTilt,
 } from '@phosphor-icons/react'
 import ThankYouCard from '../components/ThankYouCard'
 import ThemeToggle from '../components/ThemeToggle'
@@ -45,6 +46,10 @@ import {
   listMessages,
   updateMessage,
   deleteMessage,
+  getMailSettings,
+  saveMailSettings,
+  clearMailSettings,
+  sendTestMail,
 } from '../lib/store'
 
 /*
@@ -481,6 +486,113 @@ function Messages({ onAuthError }) {
   )
 }
 
+// Where form notifications are emailed from and to. The app password is stored encrypted.
+function EmailSettings() {
+  const [status, setStatus] = useState(null) // { configured, user, to, source }
+  const [user, setUser] = useState('')
+  const [pass, setPass] = useState('')
+  const [to, setTo] = useState('')
+  const [msg, setMsg] = useState(null)
+  const [busy, setBusy] = useState('')
+  const load = () =>
+    getMailSettings()
+      .then((s) => {
+        setStatus(s)
+        if (s.configured) {
+          setUser(s.user)
+          setTo(s.to)
+        }
+      })
+      .catch((e) => setMsg({ ok: false, text: e.message }))
+  useEffect(() => {
+    load()
+  }, [])
+  const save = async (e) => {
+    e.preventDefault()
+    setBusy('save')
+    setMsg(null)
+    try {
+      setStatus(await saveMailSettings({ user, pass, to }))
+      setPass('')
+      setMsg({ ok: true, text: 'Saved. Send a test email to confirm it works.' })
+    } catch (x) {
+      setMsg({ ok: false, text: x.message })
+    } finally {
+      setBusy('')
+    }
+  }
+  const test = async () => {
+    setBusy('test')
+    setMsg(null)
+    try {
+      await sendTestMail()
+      setMsg({ ok: true, text: `Test email sent to ${status?.to || to}. Check the inbox (and spam).` })
+    } catch (x) {
+      setMsg({ ok: false, text: x.message })
+    } finally {
+      setBusy('')
+    }
+  }
+  const clear = async () => {
+    if (!confirm('Remove the saved email settings?')) return
+    setBusy('clear')
+    try {
+      setStatus(await clearMailSettings())
+      setUser('')
+      setTo('')
+      setPass('')
+      setMsg({ ok: true, text: 'Email settings removed.' })
+    } catch (x) {
+      setMsg({ ok: false, text: x.message })
+    } finally {
+      setBusy('')
+    }
+  }
+  return (
+    <form onSubmit={save} className="rounded-2xl border border-line bg-linen p-6 sm:p-8 lg:col-span-2">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="font-display text-3xl">Email notifications</h2>
+          <p className="mt-1 text-[14px] text-muted">Every new message, volunteer, donor and feedback is emailed to the team from this Gmail account.</p>
+        </div>
+        {status && (
+          <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-[12px] font-semibold ${status.configured ? 'bg-brand-soft text-brand' : 'bg-blood/10 text-blood'}`}>
+            <span className={`h-2 w-2 rounded-full ${status.configured ? 'bg-brand' : 'bg-blood'}`} />
+            {status.configured ? `On · ${status.source === 'env' ? 'from Vercel settings' : 'saved here'}` : 'Not set up'}
+          </span>
+        )}
+      </div>
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="label" htmlFor="mail-user">Gmail address (sender)</label>
+          <input id="mail-user" type="email" value={user} onChange={(e) => setUser(e.target.value)} required autoComplete="off" className="field" placeholder="samarpitateam@gmail.com" />
+        </div>
+        <div>
+          <label className="label" htmlFor="mail-pass">Gmail app password</label>
+          <PasswordField id="mail-pass" value={pass} onChange={setPass} autoComplete="new-password" placeholder={status?.source === 'admin' ? 'Saved · enter only to change' : '16-character app password'} />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="label" htmlFor="mail-to">Send notifications to</label>
+          <input id="mail-to" type="email" value={to} onChange={(e) => setTo(e.target.value)} autoComplete="off" className="field" placeholder="Same as the sender if left empty" />
+        </div>
+      </div>
+      <p className="mt-4 text-[13px] leading-relaxed text-muted">
+        The app password is not the Gmail password. Create it at Google Account → Security → 2-Step Verification → App passwords. It is stored encrypted and never shown again.
+      </p>
+      {msg && <p className={`mt-4 rounded-xl px-4 py-3 text-[14px] ${msg.ok ? 'bg-brand-soft text-brand' : 'bg-blood/10 text-blood'}`}>{msg.text}</p>}
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        <button type="submit" disabled={!!busy} className="rounded-full bg-ink px-6 py-3.5 font-semibold text-cream disabled:opacity-60">{busy === 'save' ? 'Saving…' : 'Save settings'}</button>
+        <button type="button" onClick={test} disabled={!!busy || !status?.configured} className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3.5 font-semibold disabled:opacity-50">
+          <PaperPlaneTilt weight="bold" /> {busy === 'test' ? 'Sending…' : 'Send test email'}
+        </button>
+        {status?.source === 'admin' && (
+          <button type="button" onClick={clear} disabled={!!busy} className="ml-auto text-[13px] font-semibold text-blood disabled:opacity-50">Remove settings</button>
+        )}
+      </div>
+    </form>
+  )
+}
+
 function Security({ email, onPasswordChanged }) {
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
@@ -526,6 +638,7 @@ function Security({ email, onPasswordChanged }) {
           <li>To add or reset an admin, run <code className="rounded bg-sand px-1.5 py-0.5 text-ink">npm run admin</code> on the server project (see README).</li>
         </ul>
       </div>
+      <EmailSettings />
     </div>
   )
 }
