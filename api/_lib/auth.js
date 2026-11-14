@@ -53,10 +53,9 @@ export function passwordProblem(pw) {
 // keeps asking for a new password until it is changed (Security tab).
 export const DEFAULT_ADMIN_EMAIL = 'samarpitateam@gmail.com'
 export const DEFAULT_ADMIN_PASSWORD = 'Samarpita@2026'
-let bootstrapped = false
+// Checked on every sign-in (one cheap count), so deleting all admins in the database brings the
+// default login back on the next attempt, even on a warm serverless instance.
 export async function ensureAdmin() {
-  if (bootstrapped) return
-  bootstrapped = true
   if ((await admins.count()) > 0) return
   const email = normalizeEmail(process.env.ADMIN_EMAIL) || DEFAULT_ADMIN_EMAIL
   const password = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD
