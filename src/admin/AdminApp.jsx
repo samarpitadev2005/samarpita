@@ -722,6 +722,14 @@ export default function AdminApp() {
       </header>
 
       <main className="container-x pb-24 pt-10">
+        {admin.passwordFromEnv && (
+          <div className="mb-8 flex items-start gap-2 rounded-2xl border border-royal/30 bg-royal/10 p-5 text-[14px] leading-relaxed">
+            <Info size={20} className="mt-0.5 shrink-0 text-royal dark:text-[#7fb2ff]" />
+            <span>
+              <b>Your password is being set from Vercel.</b> The <code className="rounded bg-sand px-1.5 py-0.5">ADMIN_PASSWORD</code> environment variable is still present, so any password you set here is reset to it on the next sign-in. Remove <code className="rounded bg-sand px-1.5 py-0.5">ADMIN_PASSWORD</code> (and <code className="rounded bg-sand px-1.5 py-0.5">ADMIN_EMAIL</code>) in Vercel → Settings → Environment Variables, redeploy, then change your password from the Security tab.
+            </span>
+          </div>
+        )}
         {admin.mustChange && (
           <div className="mb-8 flex flex-col gap-3 rounded-2xl border border-gold/60 bg-gold/15 p-5 sm:flex-row sm:items-center sm:justify-between">
             <p className="flex items-start gap-2 text-[14px] leading-relaxed">

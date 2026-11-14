@@ -57,7 +57,7 @@ It is not linked from the website and is marked `noindex`.
 3. In **Project → Settings → Environment Variables** add (see `.env.example`):
    - `MONGODB_URI` – the Atlas connection string
    - `JWT_SECRET` – a long random string, e.g. `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`
-   - `ADMIN_EMAIL` and `ADMIN_PASSWORD` (optional) – the first admin account, created automatically on the first sign-in. Without them the default login `samarpitateam@gmail.com` / `Samarpita@2026` is created and the panel shows a warning until the password is changed from the **Security** tab. Do that right after the first deploy.
+   - `ADMIN_EMAIL` and `ADMIN_PASSWORD` (optional) – while both are set, that admin account always exists with exactly that password (created if missing, password reset if different), which is also how to recover a lost password. Remove `ADMIN_PASSWORD` after signing in, otherwise a password changed in the panel is reset on the next sign-in. Without them the default login `samarpitateam@gmail.com` / `Samarpita@2026` is created and the panel shows a warning until the password is changed from the **Security** tab.
 4. Deploy. Open `/admin` and sign in.
 
 ### Email notifications (free, via Gmail)

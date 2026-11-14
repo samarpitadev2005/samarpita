@@ -3,7 +3,7 @@ import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import { donors, feedback, messages, admins, usingMemory } from './_lib/db.js'
 import { notifyLater, notify, mailStatus, saveMailConfig, clearMailConfig } from './_lib/mail.js'
-import { login, changePassword, sessionCookie, clearCookie, readSession, requireAdmin } from './_lib/auth.js'
+import { login, changePassword, sessionCookie, clearCookie, readSession, requireAdmin, passwordFromEnv } from './_lib/auth.js'
 
 /*
   Samarpita API — one Express app, served by Vercel as a serverless function
@@ -185,7 +185,7 @@ app.get(
   wrap(async (req, res) => {
     const session = readSession(req)
     const a = session && (await admins.get(session.id))
-    res.json({ admin: a ? { email: a.email, mustChange: Boolean(a.mustChange) } : null })
+    res.json({ admin: a ? { email: a.email, mustChange: Boolean(a.mustChange), passwordFromEnv: passwordFromEnv(a.email) } : null })
   }),
 )
 app.post(

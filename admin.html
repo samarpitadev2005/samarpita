@@ -8,14 +8,8 @@
     <meta name="robots" content="noindex, nofollow" />
     <meta name="referrer" content="no-referrer" />
     <title>Samarpita Admin</title>
-    <script>
-      try {
-        var t = localStorage.getItem('theme')
-        if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-          document.documentElement.classList.add('dark')
-        }
-      } catch (e) {}
-    </script>
+    <!-- External (not inline) because the admin page ships a strict Content-Security-Policy -->
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

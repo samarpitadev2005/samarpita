@@ -53,15 +53,33 @@ export function passwordProblem(pw) {
 // keeps asking for a new password until it is changed (Security tab).
 export const DEFAULT_ADMIN_EMAIL = 'samarpitateam@gmail.com'
 export const DEFAULT_ADMIN_PASSWORD = 'Samarpita@2026'
-// Checked on every sign-in (one cheap count), so deleting all admins in the database brings the
-// default login back on the next attempt, even on a warm serverless instance.
+// Runs on every sign-in (a couple of cheap queries).
+//  - While ADMIN_EMAIL + ADMIN_PASSWORD are set, that account exists with exactly that password:
+//    it is created if missing and its password is reset if different. The owner controls the
+//    environment, so this is the recovery path when a password is lost. Remove ADMIN_PASSWORD
+//    after signing in, otherwise a password changed in the panel is reset on the next sign-in.
+//  - Otherwise, when there is no admin at all, the default login is created flagged mustChange.
+const envAdmin = () => {
+  const email = normalizeEmail(process.env.ADMIN_EMAIL)
+  const password = process.env.ADMIN_PASSWORD
+  return email && password ? { email, password } : null
+}
+export const passwordFromEnv = (email) => envAdmin()?.email === normalizeEmail(email)
+
 export async function ensureAdmin() {
+  const env = envAdmin()
+  if (env) {
+    const existing = await admins.findOne({ email: env.email })
+    if (!existing) {
+      await admins.insert({ email: env.email, passwordHash: await hashPassword(env.password), fails: 0, lockedUntil: null, mustChange: false, createdAt: new Date().toISOString() })
+    } else if (!(await checkPassword(env.password, existing.passwordHash))) {
+      await admins.update(existing.id, { passwordHash: await hashPassword(env.password), fails: 0, lockedUntil: null, mustChange: false, passwordChangedAt: new Date().toISOString() })
+    }
+    return
+  }
   if ((await admins.count()) > 0) return
-  const email = normalizeEmail(process.env.ADMIN_EMAIL) || DEFAULT_ADMIN_EMAIL
-  const password = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD
-  const mustChange = !process.env.ADMIN_PASSWORD
-  if (mustChange) console.warn(`[api] First admin ${email} created with the default password. Change it in the admin panel (Security tab).`)
-  await admins.insert({ email, passwordHash: await hashPassword(password), fails: 0, lockedUntil: null, mustChange, createdAt: new Date().toISOString() })
+  console.warn(`[api] First admin ${DEFAULT_ADMIN_EMAIL} created with the default password. Change it in the admin panel (Security tab).`)
+  await admins.insert({ email: DEFAULT_ADMIN_EMAIL, passwordHash: await hashPassword(DEFAULT_ADMIN_PASSWORD), fails: 0, lockedUntil: null, mustChange: true, createdAt: new Date().toISOString() })
 }
 
 export async function login(emailRaw, password) {
@@ -86,7 +104,7 @@ export async function login(emailRaw, password) {
   }
   await admins.update(admin.id, { fails: 0, lockedUntil: null, lastLoginAt: new Date().toISOString() })
   const token = jwt.sign({ sub: admin.id, email: admin.email }, secret(), { expiresIn: `${SESSION_HOURS}h`, issuer: 'samarpita' })
-  return { token, admin: { email: admin.email, mustChange: Boolean(admin.mustChange) } }
+  return { token, admin: { email: admin.email, mustChange: Boolean(admin.mustChange), passwordFromEnv: passwordFromEnv(admin.email) } }
 }
 
 export async function changePassword(adminId, current, next) {
