@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { FacebookLogo, InstagramLogo, YoutubeLogo, XLogo, WhatsappLogo, ArrowUp, EnvelopeSimple, Phone, MapPin } from '@phosphor-icons/react'
+import { FacebookLogo, InstagramLogo, YoutubeLogo, WhatsappLogo, ArrowUp, EnvelopeSimple, Phone, MapPin } from '@phosphor-icons/react'
 import { LogoMark } from './Logo'
 import { nav, site } from '../data/site'
 import { scrollToTop } from '../lib/lenis'
@@ -9,7 +9,6 @@ const socials = [
   { icon: FacebookLogo, href: site.socials.facebook, label: 'Facebook' },
   { icon: InstagramLogo, href: site.socials.instagram, label: 'Instagram' },
   { icon: YoutubeLogo, href: site.socials.youtube, label: 'YouTube' },
-  { icon: XLogo, href: site.socials.x, label: 'X' },
   { icon: WhatsappLogo, href: site.socials.whatsapp, label: 'WhatsApp' },
 ]
 
@@ -37,6 +36,8 @@ export default function Footer() {
                 <a
                   key={label}
                   href={href}
+                  target="_blank"
+                  rel="noreferrer"
                   aria-label={label}
                   className="grid h-11 w-11 place-items-center rounded-full border border-ink/15 text-ink/80 transition-all duration-300 hover:-translate-y-1 hover:border-gold hover:bg-gold hover:text-night"
                 >

@@ -32,10 +32,9 @@ export const site = {
   address: 'Odisha, India',
   hours: 'Mon to Sat, 9:00 AM to 7:00 PM',
   socials: {
-    facebook: '#',
+    facebook: 'https://www.facebook.com/share/1CN1kRm17s/?mibextid=wwXIfr',
     instagram: 'https://www.instagram.com/samar.pita2005/',
-    youtube: '#',
-    x: '#',
+    youtube: 'https://youtube.com/@samarpitasocialfoundationtrust?si=m5FhdUuFRuhFTbGG',
     whatsapp: 'https://wa.me/917326059766',
   },
 }
