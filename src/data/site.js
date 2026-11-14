@@ -79,7 +79,6 @@ export const team = [
   { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-02.jpg', 'w-600') },
   { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-03.jpg', 'w-600') },
   { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-04.jpg', 'w-600') },
-  { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-05.jpg', 'w-600') },
   { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-06.jpg', 'w-600') },
   { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-07.jpg', 'w-600') },
   { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-08.jpg', 'w-600') },
@@ -96,6 +95,8 @@ export const team = [
   { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-19.jpg', 'w-600') },
   { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-20.jpg', 'w-600') },
   { name: 'Team Member', role: 'Volunteer', photo: ik('team/member-21.jpg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/WhatsApp%20Image%202026-11-14%20at%203.06.42%20PM.jpeg', 'w-600') },
+  { name: 'Team Member', role: 'Volunteer', photo: ik('team/20261112_155935.jpg.jpeg', 'w-600') },
 ]
 
 export const nav = [
