@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { admins, usingMemory } from './db.js'
+import { admins } from './db.js'
 
 /*
   Admin sign-in.
@@ -48,22 +48,21 @@ export function passwordProblem(pw) {
   return null
 }
 
-// First run: create the admin from ADMIN_EMAIL / ADMIN_PASSWORD if there is no admin yet.
-// In local memory mode without those variables, a clearly-labelled dev login is created.
+// First run: when there is no admin yet, one is created from ADMIN_EMAIL / ADMIN_PASSWORD,
+// or with the default login below. The default is flagged `mustChange`, so the admin panel
+// keeps asking for a new password until it is changed (Security tab).
+export const DEFAULT_ADMIN_EMAIL = 'samarpitateam@gmail.com'
+export const DEFAULT_ADMIN_PASSWORD = 'Samarpita@2026'
 let bootstrapped = false
 export async function ensureAdmin() {
   if (bootstrapped) return
   bootstrapped = true
   if ((await admins.count()) > 0) return
-  let email = normalizeEmail(process.env.ADMIN_EMAIL)
-  let password = process.env.ADMIN_PASSWORD
-  if ((!email || !password) && usingMemory && !isProd) {
-    email = 'admin@samarpita.local'
-    password = 'samarpita-dev-1234'
-    console.log(`[api] No database configured: dev admin is ${email} / ${password}`)
-  }
-  if (!email || !password) return
-  await admins.insert({ email, passwordHash: await hashPassword(password), fails: 0, lockedUntil: null, createdAt: new Date().toISOString() })
+  const email = normalizeEmail(process.env.ADMIN_EMAIL) || DEFAULT_ADMIN_EMAIL
+  const password = process.env.ADMIN_PASSWORD || DEFAULT_ADMIN_PASSWORD
+  const mustChange = !process.env.ADMIN_PASSWORD
+  if (mustChange) console.warn(`[api] First admin ${email} created with the default password. Change it in the admin panel (Security tab).`)
+  await admins.insert({ email, passwordHash: await hashPassword(password), fails: 0, lockedUntil: null, mustChange, createdAt: new Date().toISOString() })
 }
 
 export async function login(emailRaw, password) {
@@ -88,7 +87,7 @@ export async function login(emailRaw, password) {
   }
   await admins.update(admin.id, { fails: 0, lockedUntil: null, lastLoginAt: new Date().toISOString() })
   const token = jwt.sign({ sub: admin.id, email: admin.email }, secret(), { expiresIn: `${SESSION_HOURS}h`, issuer: 'samarpita' })
-  return { token, admin: { email: admin.email } }
+  return { token, admin: { email: admin.email, mustChange: Boolean(admin.mustChange) } }
 }
 
 export async function changePassword(adminId, current, next) {
@@ -97,7 +96,7 @@ export async function changePassword(adminId, current, next) {
   if (!(await checkPassword(String(current || ''), admin.passwordHash))) return 'Current password is wrong.'
   const problem = passwordProblem(next)
   if (problem) return problem
-  await admins.update(adminId, { passwordHash: await hashPassword(next), passwordChangedAt: new Date().toISOString() })
+  await admins.update(adminId, { passwordHash: await hashPassword(next), mustChange: false, passwordChangedAt: new Date().toISOString() })
   return null
 }
 

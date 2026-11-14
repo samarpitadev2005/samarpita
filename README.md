@@ -57,7 +57,7 @@ It is not linked from the website and is marked `noindex`.
 3. In **Project → Settings → Environment Variables** add (see `.env.example`):
    - `MONGODB_URI` – the Atlas connection string
    - `JWT_SECRET` – a long random string, e.g. `node -e "console.log(require('crypto').randomBytes(48).toString('base64url'))"`
-   - `ADMIN_EMAIL` and `ADMIN_PASSWORD` – the first admin account. It is created automatically the first time someone signs in. After signing in, change the password from the **Security** tab and remove `ADMIN_PASSWORD` from Vercel.
+   - `ADMIN_EMAIL` and `ADMIN_PASSWORD` (optional) – the first admin account, created automatically on the first sign-in. Without them the default login `samarpitateam@gmail.com` / `Samarpita@2026` is created and the panel shows a warning until the password is changed from the **Security** tab. Do that right after the first deploy.
 4. Deploy. Open `/admin` and sign in.
 
 ### Email notifications (free, via Gmail)
@@ -78,8 +78,8 @@ npm run admin -- remove someone@example.com
 
 ### Local development
 `npm run dev` serves the website at `http://localhost:5173/` (clean URLs such as `/about`), the admin at `/admin`, and the API at `/api/*`.
-Without a `.env`, data is kept **in memory** (lost on restart) and a dev login is printed in the terminal:
-`admin@samarpita.local` / `samarpita-dev-1234`. Copy `.env.example` to `.env` to use a real database locally.
+Without a `.env`, data is kept **in memory** (lost on restart) and the default admin login works:
+`samarpitateam@gmail.com` / `Samarpita@2026`. Copy `.env.example` to `.env` to use a real database locally.
 
 ## Instagram reels
 Add reel links to `reels` in `src/data/site.js`; they appear in the "Seva in action" section on the home page.

@@ -1,7 +1,7 @@
 import express from 'express'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
-import { donors, feedback, messages, usingMemory } from './_lib/db.js'
+import { donors, feedback, messages, admins, usingMemory } from './_lib/db.js'
 import { notifyLater, notify, mailStatus, saveMailConfig, clearMailConfig } from './_lib/mail.js'
 import { login, changePassword, sessionCookie, clearCookie, readSession, requireAdmin } from './_lib/auth.js'
 
@@ -180,10 +180,14 @@ app.post('/api/auth/logout', (req, res) => {
   res.setHeader('Set-Cookie', clearCookie())
   res.json({ ok: true })
 })
-app.get('/api/auth/me', (req, res) => {
-  const session = readSession(req)
-  res.json({ admin: session ? { email: session.email } : null })
-})
+app.get(
+  '/api/auth/me',
+  wrap(async (req, res) => {
+    const session = readSession(req)
+    const a = session && (await admins.get(session.id))
+    res.json({ admin: a ? { email: a.email, mustChange: Boolean(a.mustChange) } : null })
+  }),
+)
 app.post(
   '/api/auth/password',
   requireAdmin,

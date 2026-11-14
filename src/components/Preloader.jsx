@@ -63,7 +63,7 @@ export default function Preloader() {
           key="preloader"
           role="status"
           aria-label="Loading"
-          className="theme-dark fixed inset-0 z-[90] flex flex-col items-center justify-center overflow-hidden bg-night text-cream"
+          className="theme-dark fixed inset-0 z-[90] flex flex-col items-center justify-center overflow-hidden bg-night text-white"
           exit={{ y: '-100%', transition: { duration: 0.9, ease } }}
         >
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(70,201,28,0.18),transparent_60%)]" />
@@ -82,10 +82,10 @@ export default function Preloader() {
             className="relative mt-6 text-center"
           >
             <OdiaWord className="text-[clamp(3rem,10vw,5.5rem)] leading-none text-brand" />
-            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-cream/60">{site.tagline}</p>
+            <p className="mt-2 text-[11px] font-semibold uppercase tracking-[0.3em] text-white/60">{site.tagline}</p>
           </motion.div>
           {/* Progress line: fills over the minimum time, then snaps to full as the loader leaves */}
-          <div className="absolute bottom-0 left-0 h-[3px] w-full bg-cream/10">
+          <div className="absolute bottom-0 left-0 h-[3px] w-full bg-white/10">
             <motion.div
               initial={{ scaleX: 0 }}
               animate={{ scaleX: 1 }}

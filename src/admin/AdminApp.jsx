@@ -722,6 +722,15 @@ export default function AdminApp() {
       </header>
 
       <main className="container-x pb-24 pt-10">
+        {admin.mustChange && (
+          <div className="mb-8 flex flex-col gap-3 rounded-2xl border border-gold/60 bg-gold/15 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <p className="flex items-start gap-2 text-[14px] leading-relaxed">
+              <ShieldCheck size={20} className="mt-0.5 shrink-0 text-gold" />
+              <span><b>You are signed in with the default password.</b> Anyone who reads the project code knows it. Please set your own password now.</span>
+            </p>
+            <button onClick={() => setTab('security')} className="shrink-0 rounded-full bg-ink px-5 py-3 text-[14px] font-semibold text-cream">Change password</button>
+          </div>
+        )}
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <span className="eyebrow">Signed in as {admin.email}</span>
