@@ -18,15 +18,15 @@ export const site = {
   odia: 'ସମର୍ପିତ',
   tagline: 'Seva hi Samarpan',
   email: 'samarpitateam@gmail.com',
-  phone: '+91 95834 63595',
-  phoneRaw: '+919583463595',
-  whatsapp: '+91 95834 63595',
-  whatsappLink: 'https://wa.me/919583463595',
+  phone: '+91 73260 59766',
+  phoneRaw: '+917326059766',
+  whatsapp: '+91 73260 59766',
+  whatsappLink: 'https://wa.me/917326059766',
   // Every number people can call; the first one is the main helpline shown on buttons
   phones: [
-    { label: 'Helpline', number: '+91 95834 63595', raw: '+919583463595' },
+    { label: 'Helpline', number: '+91 73260 59766', raw: '+917326059766' },
+    { label: 'Team', number: '+91 95834 63595', raw: '+919583463595' },
     { label: 'Team', number: '+91 82607 33288', raw: '+918260733288' },
-    { label: 'Team', number: '+91 73260 59766', raw: '+917326059766' },
     { label: 'Team', number: '+91 77498 97726', raw: '+917749897726' },
   ],
   address: 'Odisha, India',
@@ -36,7 +36,7 @@ export const site = {
     instagram: 'https://www.instagram.com/samar.pita2005/',
     youtube: '#',
     x: '#',
-    whatsapp: 'https://wa.me/919583463595',
+    whatsapp: 'https://wa.me/917326059766',
   },
 }
 
