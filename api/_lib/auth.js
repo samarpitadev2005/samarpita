@@ -20,10 +20,14 @@ const ROUNDS = 12
 
 const isProd = Boolean(process.env.VERCEL) || process.env.NODE_ENV === 'production'
 
+// True when the server can sign sessions (JWT_SECRET set and long enough, or local dev)
+export const jwtSecretOk = () => (process.env.JWT_SECRET || '').length >= 32 || !isProd
+export const JWT_SETUP_ERROR = 'Server setup incomplete: add a JWT_SECRET of at least 32 characters in Vercel → Settings → Environment Variables and redeploy.'
+
 function secret() {
   const s = process.env.JWT_SECRET
   if (s && s.length >= 32) return s
-  if (isProd) throw new Error('JWT_SECRET is missing or shorter than 32 characters')
+  if (isProd) throw new Error(JWT_SETUP_ERROR)
   // Local development only: a per-process secret, so sessions reset when the server restarts
   if (!globalThis.__devJwtSecret) globalThis.__devJwtSecret = require_random()
   return globalThis.__devJwtSecret

@@ -3,7 +3,7 @@ import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import { donors, feedback, messages, admins, usingMemory } from './_lib/db.js'
 import { notifyLater, notify, mailStatus, saveMailConfig, clearMailConfig } from './_lib/mail.js'
-import { login, changePassword, sessionCookie, clearCookie, readSession, requireAdmin, passwordFromEnv } from './_lib/auth.js'
+import { login, changePassword, sessionCookie, clearCookie, readSession, requireAdmin, passwordFromEnv, jwtSecretOk, JWT_SETUP_ERROR } from './_lib/auth.js'
 
 /*
   Samarpita API — one Express app, served by Vercel as a serverless function
@@ -54,7 +54,7 @@ const wrap = (fn) => (req, res) =>
 // ---------- public ----------
 app.get(
   '/api/health',
-  wrap(async (req, res) => res.json({ ok: true, storage: usingMemory ? 'memory' : 'mongodb', mail: (await mailStatus()).configured })),
+  wrap(async (req, res) => res.json({ ok: true, storage: usingMemory ? 'memory' : 'mongodb', mail: (await mailStatus()).configured, jwtSecret: jwtSecretOk() })),
 )
 
 app.post(
@@ -170,6 +170,7 @@ app.post(
   loginLimiter,
   wrap(async (req, res) => {
     const { email, password } = req.body || {}
+    if (!jwtSecretOk()) return res.status(500).json({ error: JWT_SETUP_ERROR })
     const result = await login(email, password)
     if (result.error) return res.status(401).json({ error: result.error })
     res.setHeader('Set-Cookie', sessionCookie(result.token))
